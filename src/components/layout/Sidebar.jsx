@@ -1,78 +1,16 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  Users, 
-  Building2, 
-  FileText, 
-  BarChart3, 
-  Settings,
-  X,
-  Truck,
-  CreditCard,
-  CheckCircle
-} from 'lucide-react';
+import { X, Truck } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../ui/button';
 import { cn } from '../../lib/utils';
+import { sidebarNavItems } from '../../config/routes';
 
 const Sidebar = ({ onClose }) => {
   const { user, hasAnyRole } = useAuth();
   const location = useLocation();
 
-  const navigation = [
-    {
-      name: 'Dashboard',
-      href: '/dashboard',
-      icon: LayoutDashboard,
-      roles: ['PLATFORM_ADMIN','SALES_MANAGER', 'SALES_AGENT', 'admin', 'manager', 'sales_rep', 'mechanic']
-    },
-    {
-      name: 'Leads',
-      href: '/leads',
-      icon: Users,
-      roles: ['PLATFORM_ADMIN','SALES_MANAGER', 'SALES_AGENT', 'admin', 'manager', 'sales_rep']
-    },
-
-    {
-      name: 'Vendors',
-      href: '/vendors',
-      icon: Building2,
-      roles: ['PLATFORM_ADMIN','SALES_MANAGER', 'SALES_AGENT', 'admin', 'manager', 'sales_rep']
-    },
-    {
-      name: 'Subscription Plans',
-      href: '/subscription-plans',
-      icon: CreditCard,
-      roles: ['PLATFORM_ADMIN','admin']
-    },
-    {
-      name: 'Tire Inventory',
-      href: '/inventory',
-      icon: Truck,
-      roles: ['PLATFORM_ADMIN','SALES_MANAGER','admin', 'manager', 'mechanic']
-    },
-    {
-      name: 'Reports',
-      href: '/reports',
-      icon: BarChart3,
-      roles: ['PLATFORM_ADMIN','admin', 'manager']
-    },
-    {
-      name: 'Settings',
-      href: '/settings',
-      icon: Settings,
-      roles: ['PLATFORM_ADMIN','admin']
-    },
-    {
-      name: 'Approve Leads',
-      href: '/leads/approval',
-      icon: CheckCircle,
-      roles: ['PLATFORM_ADMIN', 'admin', 'manager']
-    }
-  ];
-
-  const filteredNavigation = navigation.filter(item => 
+  const filteredNavigation = sidebarNavItems.filter(item =>
     hasAnyRole(item.roles)
   );
 
@@ -102,9 +40,9 @@ const Sidebar = ({ onClose }) => {
       {/* Navigation */}
       <nav className="flex-1 px-4 py-4 space-y-1">
         {filteredNavigation.map((item) => {
-          const isActive = location.pathname === item.href || 
+          const isActive = location.pathname === item.href ||
                           (item.href !== '/dashboard' && location.pathname.startsWith(item.href));
-          
+
           return (
             <NavLink
               key={item.name}
@@ -150,4 +88,3 @@ const Sidebar = ({ onClose }) => {
 };
 
 export default Sidebar;
-

@@ -5,6 +5,7 @@ import apiClient, {
   extractResponseData,
   USE_MOCK_DATA 
 } from './apiClient';
+import { API_ENDPOINTS } from '../types/api';
 
 // Mock data for development
 const mockSubscriptionPlans = [
@@ -70,7 +71,7 @@ const realSubscriptionPlansService = {
   getActiveSubscriptionPlans: async (params = {}) => {
     try {
       const queryString = buildPaginationParams(params);
-      const response = await apiClient.get(`/api/v1/subscription-plans/active?${queryString}`);
+      const response = await apiClient.get(`${API_ENDPOINTS.SUBSCRIPTION_PLANS_ACTIVE}?${queryString}`);
       return extractResponseData(response);
     } catch (error) {
       throw new Error(handleApiError(error, 'Failed to fetch subscription plans'));
@@ -81,7 +82,7 @@ const realSubscriptionPlansService = {
   getAllSubscriptionPlans: async (params = {}) => {
     try {
       const queryString = buildPaginationParams(params);
-      const response = await apiClient.get(`/api/v1/subscription-plans?${queryString}`);
+      const response = await apiClient.get(`${API_ENDPOINTS.SUBSCRIPTION_PLANS}?${queryString}`);
       return extractResponseData(response);
     } catch (error) {
       throw new Error(handleApiError(error, 'Failed to fetch subscription plans'));
@@ -91,7 +92,7 @@ const realSubscriptionPlansService = {
   // Get single subscription plan by ID
   getSubscriptionPlan: async (id) => {
     try {
-      const response = await apiClient.get(`/api/v1/subscription-plans/${id}`);
+      const response = await apiClient.get(API_ENDPOINTS.SUBSCRIPTION_PLAN_BY_ID(id));
       return extractResponseData(response);
     } catch (error) {
       throw new Error(handleApiError(error, 'Failed to fetch subscription plan'));
@@ -101,7 +102,7 @@ const realSubscriptionPlansService = {
   // Create new subscription plan
   createSubscriptionPlan: async (planData) => {
     try {
-      const response = await apiClient.post('/api/v1/subscription-plans', planData);
+      const response = await apiClient.post(API_ENDPOINTS.SUBSCRIPTION_PLANS, planData);
       return extractResponseData(response);
     } catch (error) {
       throw new Error(handleApiError(error, 'Failed to create subscription plan'));
@@ -111,7 +112,7 @@ const realSubscriptionPlansService = {
   // Update existing subscription plan
   updateSubscriptionPlan: async (id, planData) => {
     try {
-      const response = await apiClient.put(`/api/v1/subscription-plans/${id}`, planData);
+      const response = await apiClient.put(API_ENDPOINTS.SUBSCRIPTION_PLAN_BY_ID(id), planData);
       return extractResponseData(response);
     } catch (error) {
       throw new Error(handleApiError(error, 'Failed to update subscription plan'));
@@ -121,7 +122,7 @@ const realSubscriptionPlansService = {
   // Delete subscription plan
   deleteSubscriptionPlan: async (id) => {
     try {
-      await apiClient.delete(`/api/v1/subscription-plans/${id}`);
+      await apiClient.delete(API_ENDPOINTS.SUBSCRIPTION_PLAN_BY_ID(id));
       return { success: true };
     } catch (error) {
       throw new Error(handleApiError(error, 'Failed to delete subscription plan'));

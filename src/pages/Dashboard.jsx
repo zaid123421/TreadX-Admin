@@ -13,7 +13,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
-import { formatCurrency, formatDate, LeadStatus } from '../types';
+import { formatCurrency, formatDate, LeadStatus, API_ENDPOINTS } from '../types';
 import { Link } from 'react-router-dom';
 import apiClient from '../services/apiClient';
 import { leadsService } from '../services/leadsApiService';
@@ -32,11 +32,11 @@ const Dashboard = () => {
         setLoading(true);
         
         // Fetch total leads
-        const leadsResponse = await apiClient.get('/api/v1/leads?page=0&size=1');
+        const leadsResponse = await apiClient.get(`${API_ENDPOINTS.LEADS}?page=0&size=1`);
         setTotalLeads(leadsResponse.data.totalElements || 0);
         
         // Fetch total vendors
-        const vendorsResponse = await apiClient.get('/api/v1/vendors?page=0&size=1');
+        const vendorsResponse = await apiClient.get(`${API_ENDPOINTS.VENDORS}?page=0&size=1`);
         setTotalVendors(vendorsResponse.data.totalElements || 0);
         
         // Fetch all leads to calculate status distribution

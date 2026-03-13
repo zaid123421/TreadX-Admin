@@ -6,10 +6,10 @@ import { Badge } from '../../components/ui/badge';
 import { Input } from '../../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { Plus, Search, Filter, Eye, Building2 } from 'lucide-react';
-import { VendorType, formatDate } from '../../types';
+import { formatDate } from '../../types';
 import { formatPostalCode, formatPhoneNumber } from '../../utils/formatters';
 import { formatVendorIdForDisplay, normalizeVendorId, displayVendorId } from '../../utils/vendorUtils';
-import vendorsService from '../../services/vendorsApiService';
+import { vendorsService } from '../../services/vendorsApiService';
 import ErrorPage from '../../components/ui/ErrorPage';
 
 const statusColors = {

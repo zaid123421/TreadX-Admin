@@ -37,16 +37,15 @@ import {
   formatAddress,
   formatFullName,
   LeadStatus,
-  ContactMethod
+  ContactMethod,
+  API_ENDPOINTS
 } from '../../types/api';
 import { leadsService } from '../../services/leadsApiService';
+import apiClient from '../../services/apiClient';
 import LeadContactModal from './LeadContactModal';
 import LeadValidationModal from './LeadValidationModal';
 import { formatPostalCode, formatPhoneNumber } from '../../utils/formatters';
 import { useAuth } from '../../contexts/AuthContext';
-
-// API base URL
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:9003';
 
 // Helper to parse backend date arrays
 function parseBackendDate(arr) {
@@ -97,18 +96,11 @@ const LeadDetailView = () => {
 
   const loadPreviewUrl = async (leadId) => {
     try {
-      const url = `${API_BASE_URL}/api/v1/leads/${leadId}/preview`;
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+      const response = await apiClient.get(API_ENDPOINTS.LEAD_FILE_PREVIEW(leadId), {
+        responseType: 'blob'
       });
-      
-      if (response.ok) {
-        const blob = await response.blob();
-        const blobUrl = URL.createObjectURL(blob);
-        setPreviewUrl(blobUrl);
-      }
+      const blobUrl = URL.createObjectURL(response.data);
+      setPreviewUrl(blobUrl);
     } catch (error) {
       console.error('Failed to load preview URL:', error);
     }
@@ -160,28 +152,16 @@ const LeadDetailView = () => {
       setError('Authentication required to preview document');
       return;
     }
-    
-    // Create a blob URL with authentication
-    const url = `${API_BASE_URL}/api/v1/leads/${lead.id}/preview`;
-    fetch(url, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Failed to load preview');
-      }
-      return response.blob();
-    })
-    .then(blob => {
-      const blobUrl = URL.createObjectURL(blob);
-      window.open(blobUrl, '_blank');
-    })
-    .catch(error => {
-      console.error('Preview error:', error);
-      setError('Failed to load document preview');
-    });
+
+    apiClient.get(API_ENDPOINTS.LEAD_FILE_PREVIEW(lead.id), { responseType: 'blob' })
+      .then(response => {
+        const blobUrl = URL.createObjectURL(response.data);
+        window.open(blobUrl, '_blank');
+      })
+      .catch(error => {
+        console.error('Preview error:', error);
+        setError('Failed to load document preview');
+      });
   };
 
   const handleDownload = () => {
@@ -189,108 +169,45 @@ const LeadDetailView = () => {
       setError('Authentication required to download document');
       return;
     }
-    
-    // Create a blob URL with authentication
-    const url = `${API_BASE_URL}/api/v1/leads/${lead.id}/file`;
-    fetch(url, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Failed to download file');
-      }
-      
-      // Get filename from Content-Disposition header or use original filename
-      const contentDisposition = response.headers.get('Content-Disposition');
-      let filename = `lead-${lead.id}-document`;
-      
-      if (contentDisposition) {
-        const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-        if (filenameMatch && filenameMatch[1]) {
-          filename = filenameMatch[1].replace(/['"]/g, '');
+
+    apiClient.get(API_ENDPOINTS.LEAD_FILE_DOWNLOAD(lead.id), { responseType: 'blob' })
+      .then(response => {
+        const contentDisposition = response.headers['content-disposition'];
+        let filename = `lead-${lead.id}-document`;
+
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+          if (filenameMatch && filenameMatch[1]) {
+            filename = filenameMatch[1].replace(/['"]/g, '');
+          }
         }
-      }
-      
-      // If no filename from header, try to get it from the uploadedFile field
-      if (filename === `lead-${lead.id}-document` && lead.uploadedFile) {
-        const originalFilename = lead.uploadedFile.split('/').pop(); // Get filename from path
-        if (originalFilename && originalFilename.includes('.')) {
-          filename = originalFilename;
+
+        if (filename === `lead-${lead.id}-document` && lead.uploadedFile) {
+          const originalFilename = lead.uploadedFile.split('/').pop();
+          if (originalFilename && originalFilename.includes('.')) {
+            filename = originalFilename;
+          }
         }
-      }
-      
-      // Determine file extension from blob type
-      return response.blob().then(blobData => {
+
+        const blobData = response.data;
         let finalFilename = filename;
-        
-        // Debug: Log the MIME type to see what we're getting
-        console.log('Blob MIME type:', blobData.type);
-        console.log('Blob size:', blobData.size);
-        
-        // Add extension based on blob type if no extension exists
+
         if (!finalFilename.includes('.')) {
           const mimeType = blobData.type;
-          let extension = '';
-          
-          // Since we can see it's an image in the preview, prioritize image extensions
-          if (mimeType.startsWith('image/')) {
-            switch (mimeType) {
-              case 'image/jpeg':
-              case 'image/jpg':
-                extension = '.jpg';
-                break;
-              case 'image/png':
-                extension = '.png';
-                break;
-              case 'image/gif':
-                extension = '.gif';
-                break;
-              case 'image/webp':
-                extension = '.webp';
-                break;
-              case 'image/bmp':
-                extension = '.bmp';
-                break;
-              case 'image/tiff':
-                extension = '.tiff';
-                break;
-              default:
-                extension = '.png'; // Default for unknown image types
-            }
-          } else {
-            switch (mimeType) {
-              case 'application/pdf':
-                extension = '.pdf';
-                break;
-              case 'application/msword':
-                extension = '.doc';
-                break;
-              case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-                extension = '.docx';
-                break;
-              case 'application/vnd.ms-excel':
-                extension = '.xls';
-                break;
-              case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
-                extension = '.xlsx';
-                break;
-              case 'application/octet-stream':
-              case '':
-                // Since we can see it's an image in the preview, default to PNG
-                extension = '.png';
-                break;
-              default:
-                extension = '.bin';
-            }
-          }
-          
-          finalFilename = filename + extension;
+          const mimeExtMap = {
+            'image/jpeg': '.jpg', 'image/jpg': '.jpg', 'image/png': '.png',
+            'image/gif': '.gif', 'image/webp': '.webp', 'image/bmp': '.bmp',
+            'image/tiff': '.tiff', 'application/pdf': '.pdf',
+            'application/msword': '.doc',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+            'application/vnd.ms-excel': '.xls',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '.xlsx',
+          };
+          const ext = mimeExtMap[mimeType]
+            || (mimeType.startsWith('image/') ? '.png' : '.bin');
+          finalFilename = filename + ext;
         }
-        
-        console.log('Final filename:', finalFilename);
-        
+
         const blobUrl = URL.createObjectURL(blobData);
         const link = document.createElement('a');
         link.href = blobUrl;
@@ -299,12 +216,11 @@ const LeadDetailView = () => {
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(blobUrl);
+      })
+      .catch(error => {
+        console.error('Download error:', error);
+        setError('Failed to download document');
       });
-    })
-    .catch(error => {
-      console.error('Download error:', error);
-      setError('Failed to download document');
-    });
   };
 
   const formatDate = (dateArr) => {

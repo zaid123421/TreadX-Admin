@@ -6,7 +6,7 @@ import { Badge } from '../ui/badge';
 import { Mail, Phone, MapPin, User, Building2, Users, Shield, UserCheck, Wrench } from 'lucide-react';
 import { formatPostalCode, formatPhoneNumber } from '../../utils/formatters';
 import { formatVendorIdForDisplay, normalizeVendorId, displayVendorId } from '../../utils/vendorUtils';
-import vendorsService from '../../services/vendorsApiService';
+import { vendorsService } from '../../services/vendorsApiService';
 import { UserRole } from '../../types/api';
 import ErrorPage from '../ui/ErrorPage';
 

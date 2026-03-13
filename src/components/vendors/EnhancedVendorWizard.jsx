@@ -9,7 +9,7 @@ import { Badge } from '../ui/badge';
 import { Alert, AlertDescription } from '../ui/alert';
 import { leadsService } from '../../services/leadsApiService';
 import { LeadStatus, defaultVendorRequest, UserRole } from '../../types/api';
-import vendorsService from '../../services/vendorsApiService';
+import { vendorsService } from '../../services/vendorsApiService';
 import { useAuth } from '../../contexts/AuthContext';
 import UserAccessManagement from './UserAccessManagement';
 import { 
