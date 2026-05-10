@@ -1,0 +1,14 @@
+{
+  "appName": "TreadX",
+  "appSubtitle": "Sales Management",
+  "actions": {
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Log out"
+  },
+  "roles": {
+    "SYSTEM_ADMIN": "System admin",
+    "SALES_MANAGER": "Sales manager",
+    "SALES_AGENT": "Sales agent"
+  }
+}

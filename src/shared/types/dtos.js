@@ -1,0 +1,55 @@
+import { TerritoryLevel } from './enums';
+
+export const defaultUserResponse = {
+  id: null,
+  email: '',
+  firstName: '',
+  lastName: '',
+  position: '',
+  role: null,
+  additionalPermissions: [],
+  createdAt: '',
+  updatedAt: '',
+  createdBy: null,
+  updatedBy: null,
+  active: true,
+  system: false,
+};
+
+export const defaultTerritoryResponse = {
+  id: null,
+  code: '',
+  name: '',
+  level: TerritoryLevel.CITY,
+  parentTerritoryCode: '',
+  databaseName: '',
+  isActive: true,
+  description: '',
+  timezone: '',
+  currency: '',
+  createdAt: '',
+  updatedAt: '',
+  createdBy: null,
+  updatedBy: null,
+  territoryUniqueId: '',
+  parentUniqueId: '',
+  childTerritoryCodes: [],
+  descendantTerritoryCodes: [],
+  ancestorTerritoryCodes: [],
+  totalChildTerritories: 0,
+  totalDescendantTerritories: 0,
+};
+
+export const defaultPageResponse = {
+  totalElements: 0,
+  totalPages: 0,
+  size: 10,
+  content: [],
+  number: 0,
+  sort: [],
+  first: true,
+  last: true,
+  numberOfElements: 0,
+  pageable: null,
+  empty: true,
+};

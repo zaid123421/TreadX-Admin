@@ -1,0 +1,16 @@
+{
+  "dashboard": "لوحة التحكم",
+  "leads": "العملاء المحتملون",
+  "leadsApproval": "اعتماد العملاء",
+  "vendors": "الموردون",
+  "subscriptionPlans": "خطط الاشتراك",
+  "subscriptions": "الاشتراكات",
+  "users": "المستخدمون",
+  "roles": "الأدوار",
+  "changePassword": "تغيير كلمة المرور",
+  "inventory": "مخزون الإطارات",
+  "reports": "التقارير",
+  "settings": "الإعدادات",
+  "leadsManagement": "إدارة العملاء المحتملين",
+  "vendorsManagement": "إدارة الموردين"
+}

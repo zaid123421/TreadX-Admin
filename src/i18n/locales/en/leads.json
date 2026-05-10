@@ -1,0 +1,10 @@
+{
+  "status": {
+    "PENDING": "Pending",
+    "APPROVED": "Approved",
+    "DENIED": "Denied",
+    "CONTACTED": "Contacted",
+    "ONBOARDED": "Onboarded",
+    "DONE": "Completed"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "welcome": "Welcome back, {{name}}!",
+  "welcomeSubtitle": "Here is what is happening with your tire sales today.",
+  "totalLeads": "Total Leads",
+  "vendors": "Vendors",
+  "monthlyRevenue": "Monthly Revenue",
+  "leadStatusOverview": "Lead Status Overview",
+  "leadStatusDescription": "Current distribution of leads by status",
+  "recentActivity": "Recent Activity",
+  "recentActivityDescription": "Latest updates and changes in the system",
+  "quickActions": "Quick Actions",
+  "quickActionsDescription": "Common tasks and shortcuts",
+  "createLead": "Create New Lead",
+  "createLeadDesc": "Add a new sales opportunity",
+  "addVendor": "Add Vendor",
+  "addVendorDesc": "Register a new tire vendor",
+  "inventoryCheck": "Inventory Check",
+  "inventoryCheckDesc": "Review tire stock levels",
+  "noLeads": "No leads found",
+  "loadingStatuses": "Loading status data...",
+  "noActivity": "No recent activities recorded.",
+  "checkLater": "Check back later for updates.",
+  "statuses": {
+    "PENDING": "Pending",
+    "APPROVED": "Approved",
+    "DENIED": "Denied",
+    "CONTACTED": "Contacted",
+    "ONBOARDED": "Onboarded",
+    "DONE": "Completed"
+  }
+}

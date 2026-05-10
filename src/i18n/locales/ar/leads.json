@@ -1,0 +1,10 @@
+{
+  "status": {
+    "PENDING": "قيد الانتظار",
+    "APPROVED": "مقبول",
+    "DENIED": "مرفوض",
+    "CONTACTED": "تم التواصل",
+    "ONBOARDED": "تم الإعداد",
+    "DONE": "مكتمل"
+  }
+}

@@ -1,0 +1,169 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "./variables.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: var(--font-family-sans);
+  --font-mono: var(--font-family-mono);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+
+  --text-display-lg: var(--font-size-display-lg);
+  --text-display-md: var(--font-size-display-md);
+  --text-headline-lg: var(--font-size-headline-lg);
+  --text-headline-md: var(--font-size-headline-md);
+  --text-headline-sm: var(--font-size-headline-sm);
+  --text-title-lg: var(--font-size-title-lg);
+  --text-title-md: var(--font-size-title-md);
+  --text-body-lg: var(--font-size-body-lg);
+  --text-body-md: var(--font-size-body-md);
+  --text-label-lg: var(--font-size-label-lg);
+  --text-label-md: var(--font-size-label-md);
+  --text-label-sm: var(--font-size-label-sm);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --background: var(--color-surface-light);
+  --foreground: var(--color-secondary-main);
+  --card: var(--color-surface-light-container);
+  --card-foreground: var(--color-secondary-main);
+  --popover: var(--color-surface-light-container);
+  --popover-foreground: var(--color-secondary-main);
+
+  --primary: var(--color-primary-main-light);
+  --primary-foreground: var(--color-secondary-on-surface);
+  --secondary: var(--color-secondary-container);
+  --secondary-foreground: var(--color-secondary-on-surface);
+  --muted: var(--color-primary-container);
+  --muted-foreground: var(--color-warning-on-container);
+  --accent: var(--color-tertiary-container);
+  --accent-foreground: var(--color-tertiary-on-container);
+  --destructive: var(--color-error-main);
+  --success: var(--color-success-main-light);
+  --warning: var(--color-warning-main-light);
+  --info: var(--color-info-main);
+  --border: color-mix(in srgb, var(--color-secondary-main) 16%, transparent);
+  --input: color-mix(in srgb, var(--color-secondary-main) 22%, transparent);
+  --ring: color-mix(in srgb, var(--color-primary-main-light) 50%, transparent);
+
+  --chart-1: var(--color-chart-1);
+  --chart-2: var(--color-chart-2);
+  --chart-3: var(--color-chart-3);
+  --chart-4: var(--color-chart-4);
+  --chart-5: var(--color-chart-5);
+  --chart-6: var(--color-chart-6);
+
+  --sidebar: var(--color-surface-light-container);
+  --sidebar-foreground: var(--color-secondary-main);
+  --sidebar-primary: var(--color-primary-main-light);
+  --sidebar-primary-foreground: var(--color-secondary-on-surface);
+  --sidebar-accent: var(--color-primary-container);
+  --sidebar-accent-foreground: var(--color-primary-on-container);
+  --sidebar-border: color-mix(in srgb, var(--color-secondary-main) 16%, transparent);
+  --sidebar-ring: color-mix(in srgb, var(--color-primary-main-light) 50%, transparent);
+}
+
+.dark {
+  --background: var(--color-surface-default);
+  --foreground: var(--color-secondary-on-surface);
+  --card: var(--color-surface-container);
+  --card-foreground: var(--color-secondary-on-surface);
+  --popover: var(--color-surface-container-high);
+  --popover-foreground: var(--color-secondary-on-surface);
+
+  --primary: var(--color-primary-main-dark);
+  --primary-foreground: var(--color-primary-on-container);
+  --secondary: var(--color-secondary-main);
+  --secondary-foreground: var(--color-secondary-on-surface);
+  --muted: var(--color-surface-container-high);
+  --muted-foreground: var(--color-secondary-on-surface);
+  --accent: var(--color-surface-container-high);
+  --accent-foreground: var(--color-secondary-on-surface);
+  --destructive: var(--color-error-main);
+  --success: var(--color-success-main-dark);
+  --warning: var(--color-warning-main-dark);
+  --info: var(--color-info-main);
+  --border: color-mix(in srgb, var(--color-secondary-on-surface) 16%, transparent);
+  --input: color-mix(in srgb, var(--color-secondary-on-surface) 22%, transparent);
+  --ring: color-mix(in srgb, var(--color-primary-main-dark) 55%, transparent);
+
+  --chart-1: var(--color-chart-1);
+  --chart-2: var(--color-chart-2);
+  --chart-3: var(--color-chart-3);
+  --chart-4: var(--color-chart-4);
+  --chart-5: var(--color-chart-5);
+  --chart-6: var(--color-chart-6);
+
+  --sidebar: var(--color-surface-container-low);
+  --sidebar-foreground: var(--color-secondary-on-surface);
+  --sidebar-primary: var(--color-primary-main-dark);
+  --sidebar-primary-foreground: var(--color-primary-on-container);
+  --sidebar-accent: var(--color-surface-container-high);
+  --sidebar-accent-foreground: var(--color-secondary-on-surface);
+  --sidebar-border: color-mix(in srgb, var(--color-secondary-on-surface) 16%, transparent);
+  --sidebar-ring: color-mix(in srgb, var(--color-primary-main-dark) 55%, transparent);
+}
+
+html {
+  font-family: var(--font-family-sans);
+}
+
+html[lang="ar"] {
+  font-family: var(--font-family-arabic);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-size: var(--font-size-body-md);
+    font-weight: var(--font-weight-regular);
+    transition:
+      background-color var(--duration-normal) var(--easing-standard),
+      color var(--duration-normal) var(--easing-standard);
+  }
+}

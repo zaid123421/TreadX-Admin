@@ -1,0 +1,16 @@
+{
+  "dashboard": "Dashboard",
+  "leads": "Leads",
+  "leadsApproval": "Approve Leads",
+  "vendors": "Vendors",
+  "subscriptionPlans": "Subscription Plans",
+  "subscriptions": "Subscriptions",
+  "users": "Users",
+  "roles": "Roles",
+  "changePassword": "Change Password",
+  "inventory": "Tire Inventory",
+  "reports": "Reports",
+  "settings": "Settings",
+  "leadsManagement": "Leads Management",
+  "vendorsManagement": "Vendor Management"
+}

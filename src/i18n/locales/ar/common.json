@@ -1,0 +1,14 @@
+{
+  "appName": "تريدكس",
+  "appSubtitle": "إدارة المبيعات",
+  "actions": {
+    "profile": "الملف الشخصي",
+    "settings": "الإعدادات",
+    "logout": "تسجيل الخروج"
+  },
+  "roles": {
+    "SYSTEM_ADMIN": "مدير النظام",
+    "SALES_MANAGER": "مدير المبيعات",
+    "SALES_AGENT": "مندوب المبيعات"
+  }
+}

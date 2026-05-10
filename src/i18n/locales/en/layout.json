@@ -1,0 +1,13 @@
+{
+  "pageTitleFallback": "TreadX Sales Management",
+  "header": {
+    "notifications": "Notifications"
+  },
+  "theme": {
+    "switchToLight": "Switch to light mode",
+    "switchToDark": "Switch to dark mode"
+  },
+  "locale": {
+    "switchLanguage": "Switch language"
+  }
+}
