@@ -60,6 +60,12 @@ export const API_ENDPOINTS = {
   ACTIVE_SUBSCRIPTION_BY_DEALER: (dealerId) =>
     `/subscriptions/dealer/${dealerId}/active`,
   SUBSCRIPTION_CANCEL: (id) => `/subscriptions/${id}/cancel`,
+  SUBSCRIPTION_RENEW: (id) => `/subscriptions/${id}/renew`,
+  SUBSCRIPTION_UPDATE: (id) => `/subscriptions/${id}`,
+
+  CONVERSION_REQUESTS_ENDPOINT: `/conversion-requests/assigned/pending`,
+  CONVERSION_REQUEST_CREATE: (leadId) => `/conversion-requests/lead/${leadId}`,
+  CONVERSION_REQUEST_DECISION: (requestId) => `/conversion-requests/${requestId}/decision`,
 
   ROLES: '/roles',
   ROLE_BY_ID: (id) => `/roles/${id}`,

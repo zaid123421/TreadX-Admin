@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/app/providers/AuthContext';
 import { vendorsService } from '../services/vendorsApiService';
+import { subscriptionsService } from '@/features/subscriptions/services/subscriptionsApiService';
 
 export function useVendorDetail() {
   const { user } = useAuth();
@@ -10,6 +11,7 @@ export function useVendorDetail() {
   const [vendor, setVendor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeSubscription, setActiveSubscription] = useState(null);
 
   useEffect(() => {
     loadVendor();
@@ -22,6 +24,15 @@ export function useVendorDetail() {
       setError(null);
       const vendorData = await vendorsService.getVendor(id);
       setVendor(vendorData);
+
+      // Fetch active subscription
+      try {
+        const subscriptionData = await subscriptionsService.getActiveSubscriptionByDealer(id);
+        setActiveSubscription(subscriptionData);
+      } catch (subErr) {
+        // If no active subscription, that's okay
+        setActiveSubscription(null);
+      }
     } catch (err) {
       console.error('Error loading vendor:', err);
       setError(err);
@@ -49,5 +60,6 @@ export function useVendorDetail() {
     error,
     loadVendor,
     handleDelete,
+    activeSubscription,
   };
 }

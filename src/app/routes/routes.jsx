@@ -6,7 +6,8 @@ import {
   Truck,
   BarChart3,
   Settings,
-  CheckCircle
+  CheckCircle,
+  FileText
 } from 'lucide-react';
 
 import Dashboard from '../../features/dashboard';
@@ -15,6 +16,7 @@ import AddLead from '../../features/leads/pages/AddLead';
 import EditLead from '../../features/leads/pages/EditLead';
 import LeadDetail from '../../features/leads/pages/LeadDetail';
 import LeadsApproval from '../../features/leads/pages/LeadsApproval';
+import ConversionRequestListPage from '../../features/conversion-requests/pages/ConversionRequestListPage';
 import VendorsList from '../../features/vendors/pages/VendorsList';
 import AddVendor from '../../features/vendors/pages/AddVendor';
 import EditVendor from '../../features/vendors/pages/EditVendor';
@@ -81,6 +83,14 @@ export const protectedRoutes = [
     showInSidebar: true,
   },
   {
+    path: 'conversion-requests',
+    element: ConversionRequestListPage,
+    labelKey: 'conversionRequests',
+    icon: FileText,
+    roles: ['SYSTEM_ADMIN', 'SALES_MANAGER'],
+    showInSidebar: true,
+  },
+  {
     path: 'vendors',
     element: VendorsList,
     labelKey: 'vendors',
@@ -119,6 +129,7 @@ export const protectedRoutes = [
     roles: ['SYSTEM_ADMIN', 'SALES_MANAGER'],
     showInSidebar: true,
   },
+  // subscription detail page removed — single-list view handles actions
   {
     path: 'users',
     element: UsersManagement,

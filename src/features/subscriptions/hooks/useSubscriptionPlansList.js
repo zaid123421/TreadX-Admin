@@ -9,27 +9,20 @@ import { formatBillingCycleLabel, formatUsdPrice } from '../utils/subscriptionFo
 export function useSubscriptionPlansList() {
   const { user } = useAuth();
   const canManagePlans = canManageSubscriptionPlans(user);
-  const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize] = useState(10);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState(null);
 
   const { data: plansData, isLoading, error, refetch } = useQuery({
-    queryKey: ['subscription-plans', currentPage, pageSize, searchTerm],
+    queryKey: ['subscription-plans', currentPage, pageSize],
     queryFn: () =>
-      subscriptionPlansService.getActiveSubscriptionPlans({
+      subscriptionPlansService.getAllSubscriptionPlans({
         page: currentPage,
         size: pageSize,
-        search: searchTerm,
       }),
     staleTime: 5 * 60 * 1000,
   });
-
-  const handleSearch = (value) => {
-    setSearchTerm(value);
-    setCurrentPage(0);
-  };
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -71,8 +64,6 @@ export function useSubscriptionPlansList() {
     error,
     refetch,
     canManagePlans,
-    searchTerm,
-    handleSearch,
     currentPage,
     handlePageChange,
     isCreateModalOpen,

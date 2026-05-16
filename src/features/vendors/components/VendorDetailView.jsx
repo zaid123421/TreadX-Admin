@@ -2,14 +2,15 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
-import { Mail, Phone, MapPin, User, Building2, Users, Shield, UserCheck, Wrench } from 'lucide-react';
+import { Mail, Phone, MapPin, User, Building2, Users, Shield, UserCheck, Wrench, CreditCard, Calendar } from 'lucide-react';
 import { formatPostalCode, formatPhoneNumber } from '../../leads/utils/leadUtils';
 import { displayVendorId, VENDOR_STATUS_BADGE_STYLES } from '../utils/vendorUtils';
 import ErrorPage from '@/app/components/ErrorPage';
 import { UserRole } from '@/shared/types/api';
+import { format } from 'date-fns';
 
 export default function VendorDetailView({ vm }) {
-  const { user, navigate, vendor, loading, error, loadVendor, handleDelete } = vm;
+  const { user, navigate, vendor, loading, error, loadVendor, handleDelete, activeSubscription } = vm;
 
   if (error) {
     return (
@@ -109,14 +110,78 @@ export default function VendorDetailView({ vm }) {
                   {formatPostalCode(vendor.postalCode)}
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-foreground">
-                <span className="font-semibold">Vendor ID:</span>
-                <span className="font-mono bg-muted px-2 py-1 rounded">
-                  {displayVendorId(vendor.vendorUniqueId)}
-                </span>
-              </div>
+            
             </div>
           </div>
+
+          {activeSubscription && (
+            <div className="mt-6 pt-6 border-t">
+              <div className="flex items-center gap-2 mb-4">
+                <CreditCard className="h-5 w-5 text-muted-foreground" />
+                <h3 className="text-lg font-semibold text-foreground">Active Subscription</h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-background rounded-lg p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-muted-foreground">Plan</span>
+                    <Badge variant="outline">{activeSubscription.planName || '-'}</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-muted-foreground">Amount Paid</span>
+                    <span className="font-semibold">${activeSubscription.amountPaid?.toFixed(2) || '0.00'}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-muted-foreground">Auto Renew</span>
+                    <Badge variant={activeSubscription.autoRenew ? 'default' : 'secondary'}>
+                      {activeSubscription.autoRenew ? 'Enabled' : 'Disabled'}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-muted-foreground">Billing Weekday</span>
+                    <span className="font-semibold">{activeSubscription.billingWeekday || '-'}</span>
+                  </div>
+                </div>
+
+                <div className="bg-background rounded-lg p-4 space-y-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium text-muted-foreground">Period</span>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Start Date</span>
+                      <span className="text-sm font-medium">
+                        {activeSubscription.startDate ? format(new Date(activeSubscription.startDate), 'yyyy-MM-dd') : '-'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">End Date</span>
+                      <span className="text-sm font-medium">
+                        {activeSubscription.endDate ? format(new Date(activeSubscription.endDate), 'yyyy-MM-dd') : '-'}
+                      </span>
+                    </div>
+                  </div>
+                  {activeSubscription.cancellationDate && (
+                    <div className="pt-2 border-t">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">Cancellation Date</span>
+                        <span className="text-sm font-medium text-destructive">
+                          {format(new Date(activeSubscription.cancellationDate), 'yyyy-MM-dd')}
+                        </span>
+                      </div>
+                      {activeSubscription.cancellationReason && (
+                        <div className="mt-2">
+                          <span className="text-sm text-muted-foreground">Reason: </span>
+                          <span className="text-sm">{activeSubscription.cancellationReason}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {vendor.totalUsers && vendor.userRoles && (
             <div className="mt-6 pt-6 border-t">

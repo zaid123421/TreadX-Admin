@@ -37,9 +37,7 @@ export function LeadValidationModalView({
             <div>
               <strong>Phone:</strong> {formatPhoneNumber(lead.phoneNumber)}
             </div>
-            <div>
-              <strong>Address:</strong> {lead.streetNumber} {lead.streetName}, {formatPostalCode(lead.postalCode)}
-            </div>
+      
             <div>
               <strong>Source:</strong> {lead.source}
             </div>

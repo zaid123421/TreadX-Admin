@@ -1,14 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
 import { Input } from '@/shared/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
-import { Plus, Search, Filter, Eye, Building2 } from 'lucide-react';
+import { Plus, Search, Filter, Eye, Building2, Edit } from 'lucide-react';
 import { formatPhoneNumber } from '../../leads/utils/leadUtils';
 import { displayVendorId, VENDOR_STATUS_BADGE_STYLES } from '../utils/vendorUtils';
 import ErrorPage from '@/app/components/ErrorPage';
+import SubscriptionEditModal from '../../subscriptions/components/SubscriptionEditModal';
 
 export function VendorsListView({
   vendors,
@@ -23,7 +24,22 @@ export function VendorsListView({
   loadVendors,
   handleSearch,
   handleStatusFilterChange,
+  handleEditSubscription,
+  subscriptionPlans,
 }) {
+  const [editSubscription, setEditSubscription] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+
+  const handleEditClick = (subscription) => {
+    setEditSubscription(subscription);
+    setIsEditing(true);
+  };
+
+  const handleEditSubmit = async (data) => {
+    await handleEditSubscription(editSubscription.id, data);
+    setIsEditing(false);
+    setEditSubscription(null);
+  };
   if (error) {
     return (
       <ErrorPage
@@ -163,6 +179,25 @@ export function VendorsListView({
                               <Eye className="h-4 w-4" />
                             </Button>
                           </Link>
+                          {vendor.activeSubscriptionId && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              title="Edit Subscription"
+                              onClick={() => handleEditClick({
+                                id: vendor.activeSubscriptionId,
+                                dealerId: vendor.id,
+                                planId: vendor.subscriptionPlanId,
+                                startDate: vendor.subscriptionStartDate,
+                                endDate: vendor.subscriptionEndDate,
+                                amountPaid: vendor.subscriptionAmountPaid,
+                                autoRenew: vendor.subscriptionAutoRenew,
+                                billingWeekday: vendor.subscriptionBillingWeekday,
+                              })}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -196,6 +231,19 @@ export function VendorsListView({
             </Button>
           </div>
         </div>
+      )}
+
+      {isEditing && editSubscription && (
+        <SubscriptionEditModal
+          subscription={editSubscription}
+          subscriptionPlans={subscriptionPlans}
+          onClose={() => {
+            setIsEditing(false);
+            setEditSubscription(null);
+          }}
+          onSave={handleEditSubmit}
+          isSubmitting={false}
+        />
       )}
     </div>
   );
