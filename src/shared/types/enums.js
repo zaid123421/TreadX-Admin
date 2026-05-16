@@ -46,3 +46,9 @@ export const BillingCycle = {
   QUARTERLY: 'QUARTERLY',
   YEARLY: 'YEARLY',
 };
+
+export const ConversionRequestStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+};

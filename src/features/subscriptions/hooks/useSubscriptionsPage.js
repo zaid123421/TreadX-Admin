@@ -1,15 +1,13 @@
 import { useState, useEffect } from 'react';
 import { subscriptionsService } from '../services/subscriptionsApiService';
+import { subscriptionPlansService } from '../services/subscriptionPlansApiService';
 
 export function useSubscriptionsPage() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [dealerId, setDealerId] = useState('');
-  const [planId, setPlanId] = useState('');
-  const [amountPaid, setAmountPaid] = useState('');
   const [subscriptionId, setSubscriptionId] = useState('');
-  const [cancelReason, setCancelReason] = useState('');
+  const [subscriptionPlans, setSubscriptionPlans] = useState([]);
 
   const loadSubscriptions = async () => {
     try {
@@ -31,34 +29,26 @@ export function useSubscriptionsPage() {
 
   useEffect(() => {
     loadSubscriptions();
+    loadSubscriptionPlans();
   }, []);
 
-  const handleCreate = async () => {
+  const loadSubscriptionPlans = async () => {
     try {
-      const payload = {
-        dealerId: Number(dealerId),
-        planId: Number(planId),
-        amountPaid: Number(amountPaid),
-        startDate: new Date().toISOString().split('T')[0],
-        endDate: new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
-        autoRenew: true,
-      };
-      await subscriptionsService.createSubscription(payload);
-      setDealerId('');
-      setPlanId('');
-      setAmountPaid('');
-      await loadSubscriptions();
+      const data = await subscriptionPlansService.getAllSubscriptionPlans();
+      const plans = Array.isArray(data) ? data : data?.content || [];
+      setSubscriptionPlans(plans);
     } catch (err) {
-      setError(err.message);
+      console.error('Failed to load subscription plans:', err);
     }
   };
 
-  const handleCancel = async () => {
-    if (!subscriptionId) return;
+  // Creation of subscriptions is disabled via UI. Use API or admin tools if needed.
+
+  // Cancel a subscription by id with an optional reason.
+  const handleCancel = async (id, reason = '') => {
+    if (!id) return;
     try {
-      await subscriptionsService.cancelSubscription(subscriptionId, cancelReason);
-      setSubscriptionId('');
-      setCancelReason('');
+      await subscriptionsService.cancelSubscription(id, reason);
       await loadSubscriptions();
     } catch (err) {
       setError(err.message);
@@ -74,22 +64,25 @@ export function useSubscriptionsPage() {
     }
   };
 
+  const handleEdit = async (id, data) => {
+    try {
+      await subscriptionsService.updateSubscription(id, data);
+      await loadSubscriptions();
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
   return {
     items,
     loading,
     error,
-    dealerId,
-    setDealerId,
-    planId,
-    setPlanId,
-    amountPaid,
-    setAmountPaid,
     subscriptionId,
     setSubscriptionId,
-    cancelReason,
-    setCancelReason,
-    handleCreate,
     handleCancel,
     handleDelete,
+    handleEdit,
+    subscriptionPlans,
   };
 }

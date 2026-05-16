@@ -32,6 +32,7 @@ import { LeadStatus } from '@/shared/types/enums';
 import { formatFullName } from '@/shared/utils/formatters';
 import LeadContactModal from './LeadContactModal';
 import LeadValidationModal from './LeadValidationModal';
+import ConversionRequestModal from './ConversionRequestModal';
 import {
   formatPostalCode,
   formatPhoneNumber,
@@ -65,6 +66,7 @@ export default function LeadDetailView({ vm }) {
     setSelectedAgentId,
     handleContactSuccess,
     handleValidationSuccess,
+    handleConversionSuccess,
     handleTakeLead,
     handleDelete,
     handleAssignLead,
@@ -73,6 +75,14 @@ export default function LeadDetailView({ vm }) {
     formatDate,
     getInitials,
   } = vm;
+
+  const [showConversionModal, setShowConversionModal] = React.useState(false);
+
+  const handleConversionModalSuccess = async () => {
+    setShowConversionModal(false);
+    await handleConversionSuccess();
+    vm.setMessage?.({ type: 'success', text: 'Conversion request submitted successfully' });
+  };
 
   if (loading) {
     return (
@@ -116,6 +126,7 @@ export default function LeadDetailView({ vm }) {
 
   if (error) {
     return (
+      
       <div className="max-w-4xl mx-auto p-6">
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
@@ -488,7 +499,7 @@ export default function LeadDetailView({ vm }) {
               )}
 
               {lead.status === LeadStatus.CONTACTED && canConvertLeadToVendor && (
-                <Button className="w-full" onClick={() => navigate(`/vendors/add?leadId=${lead.id}`)}>
+                <Button className="w-full" onClick={() => setShowConversionModal(true)}>
                   <Building2 className="h-4 w-4 mr-2" />
                   Convert to Vendor
                 </Button>
@@ -540,6 +551,14 @@ export default function LeadDetailView({ vm }) {
           lead={lead}
           onClose={() => setShowValidationModal(false)}
           onSuccess={handleValidationSuccess}
+        />
+      )}
+
+      {showConversionModal && (
+        <ConversionRequestModal
+          lead={lead}
+          onClose={() => setShowConversionModal(false)}
+          onSuccess={handleConversionModalSuccess}
         />
       )}
     </div>

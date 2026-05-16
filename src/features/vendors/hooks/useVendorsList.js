@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { vendorsService } from '../services/vendorsApiService';
+import { subscriptionsService } from '@/features/subscriptions/services/subscriptionsApiService';
+import { subscriptionPlansService } from '@/features/subscriptions/services/subscriptionPlansApiService';
 
 export function useVendorsList() {
   const [vendors, setVendors] = useState([]);
@@ -10,10 +12,22 @@ export function useVendorsList() {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [pageSize] = useState(10);
+  const [subscriptionPlans, setSubscriptionPlans] = useState([]);
 
   useEffect(() => {
     loadVendors();
+    loadSubscriptionPlans();
   }, [currentPage, statusFilter]);
+
+  const loadSubscriptionPlans = async () => {
+    try {
+      const data = await subscriptionPlansService.getAllSubscriptionPlans();
+      const plans = Array.isArray(data) ? data : data?.content || [];
+      setSubscriptionPlans(plans);
+    } catch (err) {
+      console.error('Failed to load subscription plans:', err);
+    }
+  };
 
   const loadVendors = async () => {
     try {
@@ -47,6 +61,16 @@ export function useVendorsList() {
     setCurrentPage(0);
   };
 
+  const handleEditSubscription = async (id, data) => {
+    try {
+      await subscriptionsService.updateSubscription(id, data);
+      await loadVendors();
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
   return {
     vendors,
     loading,
@@ -61,5 +85,7 @@ export function useVendorsList() {
     loadVendors,
     handleSearch,
     handleStatusFilterChange,
+    handleEditSubscription,
+    subscriptionPlans,
   };
 }

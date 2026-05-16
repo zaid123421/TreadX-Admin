@@ -93,6 +93,10 @@ export function useLeadDetail() {
     setShowValidationModal(false);
   };
 
+  const handleConversionSuccess = async () => {
+    await loadLead();
+  };
+
   const handleTakeLead = async () => {
     try {
       setTakingLead(true);
@@ -218,6 +222,7 @@ export function useLeadDetail() {
     setSelectedAgentId,
     handleContactSuccess,
     handleValidationSuccess,
+    handleConversionSuccess,
     handleTakeLead,
     handleDelete,
     handleAssignLead,

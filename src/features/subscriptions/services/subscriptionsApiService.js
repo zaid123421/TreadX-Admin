@@ -21,6 +21,15 @@ export const subscriptionsService = {
     }
   },
 
+  getActiveSubscriptionByDealer: async (dealerId) => {
+    try {
+      const response = await apiClient.get(API_ENDPOINTS.ACTIVE_SUBSCRIPTION_BY_DEALER(dealerId));
+      return extractResponseData(response);
+    } catch (error) {
+      throw new Error(handleApiError(error, 'Failed to fetch active subscription'));
+    }
+  },
+
   createSubscription: async (payload) => {
     try {
       const response = await apiClient.post(API_ENDPOINTS.SUBSCRIPTIONS, payload);
