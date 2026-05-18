@@ -23,12 +23,12 @@ export const formatDateTime = (dateString) => {
   });
 };
 
-export const formatAddress = (vendor) => {
+export const formatAddress = (dealer) => {
   const parts = [
-    vendor.streetNumber,
-    vendor.streetName,
-    vendor.aptUnitBldg,
-    vendor.postalCode,
+    dealer.streetNumber,
+    dealer.streetName,
+    dealer.aptUnitBldg,
+    dealer.postalCode,
   ].filter(Boolean);
   return parts.join(', ');
 };

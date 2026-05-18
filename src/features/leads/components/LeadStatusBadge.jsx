@@ -35,10 +35,15 @@ const LeadStatusBadge = ({ status, className = "" }) => {
       variant: "default",
       className: "border border-info/25 bg-info/15 text-info",
     },
-    [LeadStatus.ONBOARDED]: {
+    [LeadStatus.PENDING_CONVERSION]: {
       icon: UserCheck,
       variant: "default",
-      className: "border border-accent/40 bg-accent/15 text-accent-foreground",
+      className: "border border-warning/25 bg-warning/15 text-warning",
+    },
+    [LeadStatus.UNQUALIFIED]: {
+      icon: XCircle,
+      variant: "default",
+      className: "border border-border bg-muted text-muted-foreground",
     },
     [LeadStatus.DONE]: {
       icon: CheckSquare,

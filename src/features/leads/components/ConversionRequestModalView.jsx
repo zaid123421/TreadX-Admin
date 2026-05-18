@@ -20,9 +20,9 @@ export function ConversionRequestModalView({
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Convert to Vendor</DialogTitle>
+          <DialogTitle>Convert to Dealer</DialogTitle>
           <DialogDescription>
-            Submit a conversion request to convert {lead.businessName} from a lead to a vendor
+            Submit a conversion request to convert {lead.businessName} from a lead to a dealer
           </DialogDescription>
         </DialogHeader>
 

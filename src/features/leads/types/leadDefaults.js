@@ -17,7 +17,7 @@ export const defaultLeadRequest = {
   uploadedFile: '',
   status: LeadStatus.PENDING,
   notes: '',
-  vendorId: null,
+  dealerId: null,
 };
 
 export const defaultLeadResponse = {
@@ -38,8 +38,8 @@ export const defaultLeadResponse = {
   previewUrl: '',
   status: LeadStatus.PENDING,
   notes: '',
-  vendorId: null,
-  vendorUniqueId: '',
+  dealerId: null,
+  dealerUniqueId: '',
   createdAt: '',
   updatedAt: '',
   addedBy: null,

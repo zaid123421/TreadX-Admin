@@ -29,7 +29,7 @@ const buildLeadRequestPayload = (leadData = {}) => {
     uploadedFile: leadData.uploadedFile,
     status: leadData.status,
     notes: leadData.notes,
-    dealerId: leadData.dealerId ?? leadData.vendorId ?? null,
+    dealerId: leadData.dealerId ?? leadData.dealerId ?? null,
   };
 };
 

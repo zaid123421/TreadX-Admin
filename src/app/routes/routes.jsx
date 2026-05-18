@@ -15,12 +15,11 @@ import LeadsList from '../../features/leads/pages/LeadsList';
 import AddLead from '../../features/leads/pages/AddLead';
 import EditLead from '../../features/leads/pages/EditLead';
 import LeadDetail from '../../features/leads/pages/LeadDetail';
-import LeadsApproval from '../../features/leads/pages/LeadsApproval';
 import ConversionRequestListPage from '../../features/conversion-requests/pages/ConversionRequestListPage';
-import VendorsList from '../../features/vendors/pages/VendorsList';
-import AddVendor from '../../features/vendors/pages/AddVendor';
-import EditVendor from '../../features/vendors/pages/EditVendor';
-import VendorDetail from '../../features/vendors/pages/VendorDetail';
+import DealersList from '../../features/dealers/pages/DealersList';
+import AddDealer from '../../features/dealers/pages/AddDealer';
+import EditDealer from '../../features/dealers/pages/EditDealer';
+import DealerDetail from '../../features/dealers/pages/DealerDetail';
 import SubscriptionPlans from '../../features/subscriptions/pages/SubscriptionPlans';
 import Subscriptions from '../../features/subscriptions/pages/Subscriptions';
 import {
@@ -74,14 +73,7 @@ export const protectedRoutes = [
     element: EditLead,
     roles: ['SYSTEM_ADMIN', 'SALES_MANAGER', 'SALES_AGENT'],
   },
-  {
-    path: 'leads-approval',
-    element: LeadsApproval,
-    labelKey: 'leadsApproval',
-    icon: CheckCircle,
-    roles: ['SYSTEM_ADMIN', 'SALES_MANAGER'],
-    showInSidebar: true,
-  },
+  // 'Leads approval' section removed from sidebar and routes as requested
   {
     path: 'conversion-requests',
     element: ConversionRequestListPage,
@@ -91,26 +83,26 @@ export const protectedRoutes = [
     showInSidebar: true,
   },
   {
-    path: 'vendors',
-    element: VendorsList,
-    labelKey: 'vendors',
+    path: 'dealers',
+    element: DealersList,
+    labelKey: 'dealers',
     icon: Building2,
     roles: ['SYSTEM_ADMIN', 'SALES_MANAGER', 'SALES_AGENT'],
     showInSidebar: true,
   },
   {
-    path: 'vendors/add',
-    element: AddVendor,
+    path: 'dealers/add',
+    element: AddDealer,
     roles: ['SYSTEM_ADMIN', 'SALES_MANAGER'],
   },
   {
-    path: 'vendors/:id',
-    element: VendorDetail,
+    path: 'dealers/:id',
+    element: DealerDetail,
     roles: ['SYSTEM_ADMIN', 'SALES_MANAGER', 'SALES_AGENT'],
   },
   {
-    path: 'vendors/:id/edit',
-    element: EditVendor,
+    path: 'dealers/:id/edit',
+    element: EditDealer,
     roles: ['SYSTEM_ADMIN', 'SALES_MANAGER'],
   },
   {

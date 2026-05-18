@@ -64,6 +64,8 @@ export const computeLeadsStatusStats = (leads, totalElements) => {
     approved: 0,
     contacted: 0,
     denied: 0,
+    pendingConversion: 0,
+    unqualified: 0,
   };
   leads.forEach((lead) => {
     switch (lead.status) {
@@ -78,6 +80,12 @@ export const computeLeadsStatusStats = (leads, totalElements) => {
         break;
       case LeadStatus.DENIED:
         stats.denied++;
+        break;
+      case LeadStatus.PENDING_CONVERSION:
+        stats.pendingConversion++;
+        break;
+      case LeadStatus.UNQUALIFIED:
+        stats.unqualified++;
         break;
       default:
         break;
@@ -339,10 +347,15 @@ export const getStatusColor = (status) => {
         backgroundColor: 'var(--color-info-main)',
         color: 'var(--color-secondary-on-surface)',
       };
-    case LeadStatus.ONBOARDED:
+    case LeadStatus.PENDING_CONVERSION:
       return {
         backgroundColor: 'var(--color-warning-main-light)',
         color: 'var(--color-secondary-on-surface)',
+      };
+    case LeadStatus.UNQUALIFIED:
+      return {
+        backgroundColor: 'var(--color-surface-light-container)',
+        color: 'var(--color-secondary-main)',
       };
     case LeadStatus.DONE:
       return {

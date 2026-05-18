@@ -16,11 +16,11 @@ export const API_ENDPOINTS = {
   LEAD_TAKE: (id) => `/leads/${id}/take`,
   LEAD_ASSIGN: (id) => `/leads/${id}/assign`,
 
-  VENDORS: '/dealers',
-  ENHANCED_VENDORS_CREATE: '/enhanced-dealers/create',
-  VENDOR_BY_ID: (id) => `/dealers/${id}`,
-  VENDORS_BY_STATUS: '/dealers/status',
-  VENDORS_SEARCH: '/dealers/search',
+  DEALERS: '/dealers',
+  ENHANCED_DEALERS_CREATE: '/enhanced-dealers/create',
+  DEALER_BY_ID: (id) => `/dealers/${id}`,
+  DEALERS_BY_STATUS: '/dealers/status',
+  DEALERS_SEARCH: '/dealers/search',
 
   /** Hierarchical address lookups for leads (GET base lists) */
   ADDRESS_COUNTRIES: '/addresses/base/countries',

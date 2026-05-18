@@ -1,6 +1,6 @@
 import { Building2, Mail, MapPin, Users, CheckCircle } from 'lucide-react';
 
-export const getVendorWizardSteps = (hasLeadId) =>
+export const getDealerWizardSteps = (hasLeadId) =>
   hasLeadId
     ? [
         {
@@ -50,7 +50,7 @@ export const getVendorWizardSteps = (hasLeadId) =>
         {
           id: 'select-lead',
           title: 'Select Contacted Lead',
-          description: 'Choose a contacted lead to convert to a vendor',
+          description: 'Choose a contacted lead to convert to a dealer',
           icon: Building2,
           fields: [],
         },

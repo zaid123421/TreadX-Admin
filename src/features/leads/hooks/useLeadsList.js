@@ -14,7 +14,9 @@ export function useLeadsList() {
   const { user, hasAnyRole } = useAuth();
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true); // 💡 حالة جديدة لأول تحميل فقط
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sourceFilter, setSourceFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(0);
@@ -38,58 +40,72 @@ export function useLeadsList() {
     }
   }, [location.state]);
 
+  // Debounce searchTerm before triggering loadLeads to avoid firing requests on every keystroke
+  useEffect(() => {
+    let handler;
+    if (!searchTerm) {
+      setDebouncedSearch('');
+    } else if (searchTerm.length > 1) {
+      handler = setTimeout(() => setDebouncedSearch(searchTerm), 300);
+    } else {
+      // single character: wait a bit longer
+      handler = setTimeout(() => setDebouncedSearch(searchTerm), 700);
+    }
+
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
+
   useEffect(() => {
     loadLeads();
-  }, [searchTerm, statusFilter, sourceFilter, currentPage, sortBy, sortDirection]);
+  }, [debouncedSearch, statusFilter, sourceFilter, currentPage, sortBy, sortDirection]);
 
   const loadLeads = async () => {
-    try {
-      setLoading(true);
-      const params = {
-        search: searchTerm,
-        page: currentPage,
-        size: pageSize,
-        sortBy,
-        direction: sortDirection,
-      };
+  try {
+    setLoading(true);
+    const params = {
+      search: debouncedSearch,
+      page: currentPage,
+      size: pageSize,
+      sortBy,
+      direction: sortDirection,
+    };
 
-      let data;
-      const isAgent = user?.roleName === 'SALES_AGENT';
+    let data;
+    const isAgent = user?.roleName === 'SALES_AGENT';
 
-      if (statusFilter !== 'all') {
-        if (isAgent) {
-          data = await leadsService.getMyLeads({ status: statusFilter, ...params });
-        } else {
-          data = await leadsService.getLeadsByStatus(statusFilter, params);
-        }
-      } else if (isAgent) {
-        data = await leadsService.getMyLeads(params);
+    if (statusFilter !== 'all') {
+      if (isAgent) {
+        data = await leadsService.getMyLeads({ status: statusFilter, ...params });
       } else {
-        data = await leadsService.getLeads(params);
+        data = await leadsService.getLeadsByStatus(statusFilter, params);
       }
-
-      setLeads(data.content || []);
-      setTotalPages(data.totalPages || 0);
-      setTotalElements(data.totalElements || 0);
-    } catch (error) {
-      console.error('Failed to load leads:', error);
-      setLeads([]);
-    } finally {
-      setLoading(false);
+    } else if (isAgent) {
+      data = await leadsService.getMyLeads(params);
+    } else {
+      data = await leadsService.getLeads(params);
     }
-  };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this lead?')) {
-      try {
-        await leadsService.deleteLead(id);
-        setMessage({ text: 'Lead deleted successfully', type: 'success' });
-        loadLeads();
-      } catch (error) {
-        setMessage({ text: error.message, type: 'error' });
-      }
-    }
-  };
+    setLeads(data.content || []);
+    setTotalPages(data.totalPages || 0);
+    setTotalElements(data.totalElements || 0);
+  } catch (error) {
+    console.error('Failed to load leads:', error);
+    setLeads([]);
+  } finally {
+    setLoading(false);
+    setIsInitialLoading(false); // 💡 تنتهي بمجرد اكتمال أول طلب بنجاح
+  }
+};
+const handleDelete = async (id) => {
+  // تم إزالة نافذة المتصفح الافتراضية لأن التأكيد أصبح مبنياً في الـ UI
+  try {
+    await leadsService.deleteLead(id);
+    setMessage({ text: 'Lead deleted successfully', type: 'success' });
+    loadLeads();
+  } catch (error) {
+    setMessage({ text: error.message, type: 'error' });
+  }
+};
 
   const handleTakeLead = async (id, event) => {
     event.stopPropagation();
@@ -126,6 +142,7 @@ export function useLeadsList() {
     user,
     leads,
     loading,
+    isInitialLoading,
     searchTerm,
     setSearchTerm,
     statusFilter,

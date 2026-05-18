@@ -27,7 +27,7 @@ const AppLayout = () => {
     const path = location.pathname;
     if (path === '/dashboard' || path === '/') return t('routes:dashboard');
     if (path.startsWith('/leads')) return t('routes:leadsManagement');
-    if (path.startsWith('/vendors')) return t('routes:vendorsManagement');
+    if (path.startsWith('/dealers')) return t('routes:dealersManagement');
     if (path.startsWith('/profile')) return t('common:actions.profile');
     return t('layout:pageTitleFallback');
   }, [location.pathname, t]);

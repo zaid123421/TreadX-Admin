@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback,useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { leadsService } from '../services/leadsApiService';
+
 import {
   fetchCountries,
   fetchProvincesByCountry,
@@ -26,103 +27,107 @@ export function useLeadWizard({ initialData = null, isEdit = false, onSuccess, o
   const [countriesError, setCountriesError] = useState(null);
   const [provincesError, setProvincesError] = useState(null);
   const [citiesError, setCitiesError] = useState(null);
+  const isInitialMount = useRef(true);
 
   useEffect(() => {
     setFormData(normalizeLeadToForm(initialData));
   }, [initialData]);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        setLoadingCountries(true);
-        setCountriesError(null);
-        const list = await fetchCountries();
-        if (!cancelled) {
-          setCountries(list);
-          setCountriesError(null);
-        }
-      } catch (e) {
-        if (!cancelled) {
-          setCountries([]);
-          setCountriesError(
-            e?.response?.data?.message || e?.message || 'Could not load countries. Check API URL and network.'
-          );
-        }
-      } finally {
-        if (!cancelled) setLoadingCountries(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
-  useEffect(() => {
-    if (formData.countryId == null || formData.countryId === '') {
-      setProvinces([]);
-      return;
-    }
-    let cancelled = false;
-    (async () => {
-      try {
-        setLoadingProvinces(true);
-        setProvincesError(null);
-        const list = await fetchProvincesByCountry(formData.countryId);
-        if (!cancelled) {
-          setProvinces(list);
-          setProvincesError(null);
-        }
-      } catch (e) {
-        if (!cancelled) {
-          setProvinces([]);
-          setProvincesError(
-            e?.response?.data?.message ||
-              e?.message ||
-              'Could not load provinces. The API may require numeric country ids, or a different query parameter — check Swagger.'
-          );
-        }
-      } finally {
-        if (!cancelled) setLoadingProvinces(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [formData.countryId]);
 
-  useEffect(() => {
-    if (formData.stateId == null || formData.stateId === '') {
-      setCities([]);
-      return;
+// 1. جلب الدول (عند فتح الصفحة أول مرة فقط)
+useEffect(() => {
+  let cancelled = false;
+  (async () => {
+    try {
+      setLoadingCountries(true);
+      const list = await fetchCountries();
+      if (!cancelled) setCountries(list);
+    } catch (e) {
+      if (!cancelled) setCountries([]);
+    } finally {
+      if (!cancelled) setLoadingCountries(false);
     }
-    let cancelled = false;
-    (async () => {
-      try {
-        setLoadingCities(true);
-        setCitiesError(null);
-        const list = await fetchCitiesByProvince(formData.stateId);
-        if (!cancelled) {
-          setCities(list);
-          setCitiesError(null);
+  })();
+  return () => { cancelled = true; };
+}, []);
+
+// 2. جلب المحافظات عند تغيير الدولة
+useEffect(() => {
+  if (formData.countryId == null || formData.countryId === '') {
+    setProvinces([]);
+    return;
+  }
+  
+  let cancelled = false;
+  (async () => {
+    try {
+      setLoadingProvinces(true);
+      const list = await fetchProvincesByCountry(formData.countryId);
+      if (!cancelled) {
+        setProvinces(list);
+        
+        // إذا لم يكن التحميل الأول والـ countryId تغير يدوياً، هنا فقط نُصفّر الباقي
+        if (!isInitialMount.current) {
+          const hasCurrentState = list.some(p => String(p.id) === String(formData.stateId));
+          if (!hasCurrentState) {
+            setFormData(prev => ({ ...prev, stateId: null, cityId: null }));
+          }
         }
-      } catch (e) {
-        if (!cancelled) {
-          setCities([]);
-          setCitiesError(
-            e?.response?.data?.message ||
-              e?.message ||
-              'Could not load cities. The API may require numeric state ids — check Swagger.'
-          );
-        }
-      } finally {
-        if (!cancelled) setLoadingCities(false);
       }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [formData.stateId]);
+    } catch (e) {
+      if (!cancelled) setProvinces([]);
+    } finally {
+      if (!cancelled) setLoadingProvinces(false);
+    }
+  })();
+  
+  return () => { cancelled = true; };
+}, [formData.countryId]);
+
+// 3. جلب المدن عند تغيير المحافظة
+useEffect(() => {
+  if (formData.stateId == null || formData.stateId === '') {
+    setCities([]);
+    return;
+  }
+
+  let cancelled = false;
+  (async () => {
+    try {
+      setLoadingCities(true);
+      const list = await fetchCitiesByProvince(formData.stateId);
+      if (!cancelled) {
+        setCities(list);
+        
+        // إذا لم يكن التحميل الأول وتغيرت المحافظة يدوياً، نُصفّر المدينة
+        if (!isInitialMount.current) {
+          const hasCurrentCity = list.some(c => String(c.id) === String(formData.cityId));
+          if (!hasCurrentCity) {
+            setFormData(prev => ({ ...prev, cityId: null }));
+          }
+        } else {
+          // بمجرد انتهاء تحميل المدن في أول ريندر للتعديل، نغلق بوابة التحميل الأول
+          isInitialMount.current = false;
+        }
+      }
+    } catch (e) {
+      if (!cancelled) setCities([]);
+    } finally {
+      if (!cancelled) setLoadingCities(false);
+    }
+  })();
+
+  return () => { cancelled = true; };
+}, [formData.stateId]);
+
+// 💡 عند تغيير الـ initialData (مثلاً بعد جلب البيانات من السيرفر) نُعيد تفعيل حماية التحميل الأول
+useEffect(() => {
+  if (initialData) {
+    isInitialMount.current = true;
+    setFormData(normalizeLeadToForm(initialData));
+  }
+}, [initialData]); // تعتمد فقط على الـ stateId
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));

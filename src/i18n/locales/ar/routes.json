@@ -3,7 +3,7 @@
   "leads": "العملاء المحتملون",
   "leadsApproval": "اعتماد العملاء",
   "conversionRequests": "طلبات التحويل",
-  "vendors": "الموردون",
+  "dealers": "الموردون",
   "subscriptionPlans": "خطط الاشتراك",
   "subscriptions": "الاشتراكات",
   "users": "المستخدمون",
@@ -13,5 +13,5 @@
   "reports": "التقارير",
   "settings": "الإعدادات",
   "leadsManagement": "إدارة العملاء المحتملين",
-  "vendorsManagement": "إدارة الموردين"
+  "dealersManagement": "إدارة الموردين"
 }

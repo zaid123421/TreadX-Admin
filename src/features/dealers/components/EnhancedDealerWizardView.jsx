@@ -249,7 +249,7 @@ function renderStepContent(vm) {
           <Alert>
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              Please review all information before submitting. This will create a new vendor with the specified user
+              Please review all information before submitting. This will create a new dealer with the specified user
               access configuration.
             </AlertDescription>
           </Alert>
@@ -326,7 +326,7 @@ function renderStepContent(vm) {
   }
 }
 
-export function EnhancedVendorWizardView(props) {
+export function EnhancedDealerWizardView(props) {
   const {
     WIZARD_STEPS,
     currentStep,
@@ -341,8 +341,8 @@ export function EnhancedVendorWizardView(props) {
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold mb-2 text-foreground">Create New Vendor</h1>
-        <p className="text-muted-foreground">Set up a new vendor with user access management</p>
+        <h1 className="text-2xl font-bold mb-2 text-foreground">Create New Dealer</h1>
+        <p className="text-muted-foreground">Set up a new dealer with user access management</p>
       </div>
 
       <div className="mb-8">
@@ -379,9 +379,9 @@ export function EnhancedVendorWizardView(props) {
             Cancel
           </Button>
 
-          {currentStep === WIZARD_STEPS.length - 1 ? (
+            {currentStep === WIZARD_STEPS.length - 1 ? (
             <Button onClick={handleSubmit} disabled={!isStepValid() || isSubmitting}>
-              {isSubmitting ? 'Creating...' : 'Create Vendor'}
+              {isSubmitting ? 'Creating...' : 'Create Dealer'}
             </Button>
           ) : (
             <Button onClick={handleNext} disabled={!isStepValid()}>

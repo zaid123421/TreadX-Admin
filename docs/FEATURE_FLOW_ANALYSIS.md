@@ -139,7 +139,7 @@ This document covers **32 Feature Flows** across 4 modules, identifies **18 gaps
 6. Sidebar shows **Quick Actions** based on lead status and user role:
    - **Validate Lead:** Visible when `status === PENDING` and user is PLATFORM_ADMIN or SALES_MANAGER.
    - **Initiate Contact:** Visible when `status === APPROVED` and no contact method set.
-   - **Convert to Vendor:** Visible when `status === CONTACTED`.
+   - **Convert to Dealer:** Visible when `status === CONTACTED`.
 
 **Alternative Flows:**
 - **403 Forbidden:** Dedicated 403 UI with "Return to Leads" button.
@@ -616,7 +616,7 @@ This document covers **32 Feature Flows** across 4 modules, identifies **18 gaps
 
 **Alternative Flows:**
 - **No matching plans:** Empty list.
-- **Used internally:** Could be consumed by `EnhancedVendorWizard` for plan filtering, but currently isn't.
+- **Used internally:** Could be consumed by `EnhancedDealerWizard` for plan filtering, but currently isn't.
 
 **Validation Rules:**
 | Parameter | Rule |
@@ -1069,7 +1069,7 @@ This document covers **32 Feature Flows** across 4 modules, identifies **18 gaps
    e. Generates `dealerUniqueId` via `DealerIdGenerator` (prefix `001010001` + 6-digit ID), saves again.
    f. Sets lead status to `ONBOARDED`, saves lead.
    g. Returns `DealerResponseDTO`.
-3. Frontend `EnhancedVendorWizard.jsx` currently calls `vendorsService.createVendor` which hits `POST /dealers` (this basic endpoint), but collects fields matching the enhanced endpoint (Gap G17).
+3. Frontend `EnhancedDealerWizard.jsx` currently calls `dealersService.createDealer` which hits `POST /dealers` (this basic endpoint), but collects fields matching the enhanced endpoint (Gap G17).
 
 **Alternative Flows:**
 - **Lead not CONTACTED:** 409 Conflict.
@@ -1101,15 +1101,15 @@ This document covers **32 Feature Flows** across 4 modules, identifies **18 gaps
 - Subscription plan exists and is active.
 
 **Main Flow:**
-1. User navigates to `/vendors/add` (or clicks "Convert to Vendor" from a lead detail with `leadId` in query).
-2. `EnhancedVendorWizard.jsx` renders with steps:
+1. User navigates to `/dealers/add` (or clicks "Convert to Dealer" from a lead detail with `leadId` in query).
+2. `EnhancedDealerWizard.jsx` renders with steps:
    - **Select Lead** (if no `leadId` in URL): Shows CONTACTED leads with search and pagination. User selects one.
    - **Business:** `legalName`, `businessName` (pre-filled from lead if selected).
    - **Contact:** `email`, `phoneNumber` (pre-filled from lead).
    - **Address:** `streetNumber`, `streetName`, `aptUnitBldg`, `postalCode`.
    - **User Access:** `totalUsers`, per-role counts via `UserAccessManagement` component. Roles: VENDOR_ADMIN, VENDOR_EMPLOYEE, VENDOR_TECHNICIAN (frontend naming — see Issue I21).
    - **Review:** Summary of all data.
-3. User submits. Frontend calls `vendorsService.createVendor(vendorData)` → `POST /api/v1/dealers` (**should call `/enhanced-dealers/create`** — Gap G17).
+3. User submits. Frontend calls `dealersService.createDealer(dealerData)` → `POST /api/v1/dealers` (**should call `/enhanced-dealers/create`** — Gap G17).
 4. If correctly routed to enhanced endpoint: `POST /api/v1/enhanced-dealers/create` with `@Valid DealerCreationRequestDTO`.
 5. Backend `EnhancedDealerService.createDealerWithAccessAndSubscription` (single `@Transactional`):
    a. **Create dealer:** Builds `DealerRequestDTO` from creation DTO (lead, address, contact, status only — not admin or subscription fields). Calls `dealerService.createDealer`.
@@ -1155,13 +1155,13 @@ This document covers **32 Feature Flows** across 4 modules, identifies **18 gaps
 **Main Flow:**
 
 **Full Update:**
-1. User navigates to `/vendors/:id/edit`.
-2. `EditVendorForm.jsx` loads dealer via `vendorsService.getVendor(id)`.
+1. User navigates to `/dealers/:id/edit`.
+2. `EditDealerForm.jsx` loads dealer via `dealersService.getDealer(id)`.
 3. Form displays fields: `legalName`, `businessName`, `streetNumber`, `streetName`, `aptUnitBldg`, `postalCode`, `email`, `phoneNumber`, `status` (ACTIVE/INACTIVE select).
 4. Formatters applied: `handleStreetNumberChange`, `handlePostalCodeChange`, `handlePhoneNumberChange`.
-5. Submit: `vendorsService.updateVendor(id, formData)` → `PUT /api/v1/dealers/{id}`.
+5. Submit: `dealersService.updateDealer(id, formData)` → `PUT /api/v1/dealers/{id}`.
 6. `DealerService.updateDealer`: loads dealer, applies all fields via `updateEntityFromRequest`, saves.
-7. Navigates to `/vendors/:id` with success message.
+7. Navigates to `/dealers/:id` with success message.
 
 **Partial Update:**
 - `PATCH /api/v1/dealers/{id}` — only non-null fields applied.
@@ -1169,7 +1169,7 @@ This document covers **32 Feature Flows** across 4 modules, identifies **18 gaps
 
 **Alternative Flows:**
 - **Dealer not found:** 404.
-- **List/detail pages de-emphasize editing:** Comments in code say "vendors cannot be modified after creation" — but edit route and form exist.
+- **List/detail pages de-emphasize editing:** Comments in code say "dealers cannot be modified after creation" — but edit route and form exist.
 
 **Validation Rules:**
 - HTML `required` on several form inputs (no Zod schema).
@@ -1190,14 +1190,14 @@ This document covers **32 Feature Flows** across 4 modules, identifies **18 gaps
 - User is authenticated with one of the above roles.
 
 **Main Flow:**
-1. User navigates to `/vendors`.
-2. `VendorsList.jsx` loads dealers via `vendorsService.getVendors(params)`:
+1. User navigates to `/dealers`.
+2. `DealersList.jsx` loads dealers via `dealersService.getDealers(params)`:
    - `GET /api/v1/dealers` with `page`, `size`, optional `status`, `search`.
 3. Backend routes to appropriate service method:
    - **No status filter:** `DealerService.getAllDealers(pageable)` → `dealerRepository.findAll`.
    - **With status:** `getDealersByStatus(status, pageable)` → `findByDealerStatus`.
    - **Search:** `searchDealers(query, pageable)` → JPQL ILIKE on legal name, business name, email, phone.
-4. Frontend renders table: Vendor (business + legal name), Vendor ID, Contact (email + phone), Status badge, View action.
+4. Frontend renders table: Dealer (business + legal name), Dealer ID, Contact (email + phone), Status badge, View action.
 5. Filtering: text search input (Enter or "Apply Filters" to trigger) + status dropdown (All/Active/Inactive).
 6. Pagination: page controls shown if `totalPages > 1`.
 
@@ -1228,13 +1228,13 @@ This document covers **32 Feature Flows** across 4 modules, identifies **18 gaps
 - Dealer exists.
 
 **Main Flow:**
-1. User clicks "View" on a dealer row → navigates to `/vendors/:id`.
-2. `VendorDetailView.jsx` loads dealer via `vendorsService.getVendor(id)` → `GET /api/v1/dealers/{id}`.
+1. User clicks "View" on a dealer row → navigates to `/dealers/:id`.
+2. `DealerDetailView.jsx` loads dealer via `dealersService.getDealer(id)` → `GET /api/v1/dealers/{id}`.
 3. Displays:
    - Header: business name + status badge.
-   - Grid: legal name, email, phone (formatted), full address (formatted postal code), vendor unique ID.
-   - **User Access Configuration** (conditional): if `totalUsers` and `userRoles` exist, shows total user count and per-role breakdown with icons (Vendor Admin / Employee / Technician using `UserRole` labels).
-4. Only action: "Back to Vendors" navigation.
+   - Grid: legal name, email, phone (formatted), full address (formatted postal code), dealer unique ID.
+   - **User Access Configuration** (conditional): if `totalUsers` and `userRoles` exist, shows total user count and per-role breakdown with icons (Dealer Admin / Employee / Technician using `UserRole` labels).
+4. Only action: "Back to Dealers" navigation.
 
 **Alternative Flows:**
 - **Dealer not found:** Error state.
@@ -1357,9 +1357,9 @@ This document covers **32 Feature Flows** across 4 modules, identifies **18 gaps
 | G3 | CRM-L12 My Lead By ID | Missing Auth Check | `GET /api/v1/leads/my-leads/{id}` has no ownership verification in `LeadsService.getMyLeadById` — any authenticated user reaching the service can read any lead by ID, regardless of ownership or assignment. | Add ownership/assignment check in `getMyLeadById`: verify the requesting agent created, is assigned to, or can take the lead. |
 | G4 | CRM-L04 PATCH Lead | Auth Inconsistency | `@PreAuthorize` allows `@authz.isLeadOwner(#id)` for SALES_AGENT, but the controller body then calls `authorizationService.hasAccessToLead(id, "UPDATE")` which only returns true for SYSTEM_ADMIN/SALES_MANAGER. Agents who own the lead pass the gate but fail the inner check. | Update `hasAccessToLead` to also check `isLeadOwner` for agents, or remove the redundant inner check since `@PreAuthorize` already handles authorization. |
 | G5 | CRM-L09 Delete Lead | Auth Inconsistency | Same pattern as G4: `@PreAuthorize` allows lead owners, but `hasAccessToLead(id, "DELETE")` blocks agents. | Same fix as G4 — align `hasAccessToLead` with the `@PreAuthorize` policy. |
-| G6 | CRM-L03 Convert to Vendor | Route Mismatch | `LeadDetailView` "Convert to Vendor" navigates to `/vendors/new?leadId=...` but the defined route is `/vendors/add`. Navigation results in a 404 / no-match. | Change navigation target from `/vendors/new` to `/vendors/add`. |
-| G7 | SUB-S01 Subscription Creation | Missing UI | Full subscription creation API exists (`POST /api/v1/subscriptions`); no standalone UI for creating or managing subscriptions outside the enhanced dealer flow. | Build a subscription management page or integrate subscription creation into the vendor detail view. |
-| G8 | SUB-S02 Subscription Listing | Missing UI | Backend provides endpoints to list subscriptions globally and per dealer; no frontend page or component consumes them. | Add subscription list/tab to vendor detail view, or create a standalone Subscriptions page. |
+| G6 | CRM-L03 Convert to Dealer | Route Mismatch | `LeadDetailView` "Convert to Dealer" navigates to `/dealers/new?leadId=...` but the defined route is `/dealers/add`. Navigation results in a 404 / no-match. | Change navigation target from `/dealers/new` to `/dealers/add`. |
+| G7 | SUB-S01 Subscription Creation | Missing UI | Full subscription creation API exists (`POST /api/v1/subscriptions`); no standalone UI for creating or managing subscriptions outside the enhanced dealer flow. | Build a subscription management page or integrate subscription creation into the dealer detail view. |
+| G8 | SUB-S02 Subscription Listing | Missing UI | Backend provides endpoints to list subscriptions globally and per dealer; no frontend page or component consumes them. | Add subscription list/tab to dealer detail view, or create a standalone Subscriptions page. |
 | G9 | SUB-S03/S04 Subscription Cancellation & Management | Missing UI | Backend supports cancellation (`POST /{id}/cancel`), update (`PUT /{id}`), and delete (`DELETE /{id}`); no frontend UI for any subscription lifecycle management. | Add cancel/edit/delete actions to the subscription listing UI (once built per G8). |
 | G10 | SUB-P02 Frontend URL Mismatch | URL Mismatch | Frontend `API_ENDPOINTS` uses `/subscription-plans/active` (and `/subscription-plans` for CRUD), but backend endpoints are under `/api/v1/plans`. Unless a proxy rewrites the prefix, all subscription plan API calls will 404. | Align frontend `API_ENDPOINTS` to use `/plans` instead of `/subscription-plans`, or add backend aliases. |
 | G11 | SUB Expiry/Renewal | Missing Logic | `SubscriptionRepository.findExpiringSubscriptions(date)` query method exists but is never called. No `@Scheduled` job processes expiring subscriptions — subscriptions that pass their `endDate` remain `ACTIVE` indefinitely. | Implement a `@Scheduled` service method that periodically checks for expired subscriptions and updates their status to `EXPIRED`, with optional auto-renewal logic for `autoRenew = true`. |
@@ -1368,8 +1368,8 @@ This document covers **32 Feature Flows** across 4 modules, identifies **18 gaps
 | G14 | AC-02 Password Change UI | Missing UI | Backend `POST /api/v1/auth/change-password` endpoint exists; no frontend form or settings page implements it. | Add a change-password form in a profile/settings page accessible to all authenticated users. |
 | G15 | AC-06 Token Refresh | Missing Frontend Logic | Backend supports refresh token rotation via `POST /api/v1/auth/refresh`; frontend stores refresh token in localStorage but never uses it. `authService.refreshToken` returns mock data. `apiClient` has no refresh-on-401 interceptor. | Implement an Axios response interceptor that catches 401 errors, calls `POST /api/v1/auth/refresh` with the stored refresh token, retries the original request with the new access token, and only redirects to login if refresh also fails. |
 | G16 | AC-01 Role Naming | Naming Mismatch | Backend uses `SYSTEM_ADMIN` consistently; frontend `UserRole` enum and `hasAnyRole` calls use `PLATFORM_ADMIN` throughout. This means role-based UI visibility checks (sidebar, quick actions) fail for users with the actual `SYSTEM_ADMIN` role unless both names are included. | Change all frontend references from `PLATFORM_ADMIN` to `SYSTEM_ADMIN`, or include both in every `hasAnyRole` array. The frontend `types/api.js` `UserRole` enum should match backend `RoleConstants`. |
-| G17 | DLR-02 Create Vendor API | Endpoint Mismatch | Frontend `vendorsService.createVendor` calls `POST /api/v1/dealers` (basic endpoint) but the wizard collects subscription plan, admin name/email, and fields that match `POST /api/v1/enhanced-dealers/create` (`DealerCreationRequestDTO`). The basic endpoint ignores subscription and admin fields. | Change frontend to call `/enhanced-dealers/create` instead of `/dealers`, or add a new frontend service method for enhanced creation. |
-| G18 | DLR-01 Dealer Delete | Missing UI | Backend `DELETE /api/v1/dealers/{id}` exists (SYSTEM_ADMIN only); no delete action in the vendor list or detail pages. | Add a delete action button in `VendorDetailView` (visible only to SYSTEM_ADMIN) with confirmation dialog. |
+| G17 | DLR-02 Create Dealer API | Endpoint Mismatch | Frontend `dealersService.createDealer` calls `POST /api/v1/dealers` (basic endpoint) but the wizard collects subscription plan, admin name/email, and fields that match `POST /api/v1/enhanced-dealers/create` (`DealerCreationRequestDTO`). The basic endpoint ignores subscription and admin fields. | Change frontend to call `/enhanced-dealers/create` instead of `/dealers`, or add a new frontend service method for enhanced creation. |
+| G18 | DLR-01 Dealer Delete | Missing UI | Backend `DELETE /api/v1/dealers/{id}` exists (SYSTEM_ADMIN only); no delete action in the dealer list or detail pages. | Add a delete action button in `DealerDetailView` (visible only to SYSTEM_ADMIN) with confirmation dialog. |
 
 ---
 
@@ -1394,10 +1394,10 @@ This document covers **32 Feature Flows** across 4 modules, identifies **18 gaps
 | I15 | Incomplete Logout | `AuthContext.logout` only removes `treadx_token` and `treadx_user` from localStorage. It does not clear `treadx_refresh_token` or `treadx_territory_code`, leaving stale auth artifacts that could cause issues on re-login or be accessed by other code. | Frontend: `AuthContext.jsx` | Add `localStorage.removeItem('treadx_refresh_token')` and `localStorage.removeItem('treadx_territory_code')` to the logout function. |
 | I16 | Security | `authService.refreshToken` returns a hardcoded mock token object (`{ token: 'mock-refreshed-token', ... }`) and never calls the backend `POST /api/v1/auth/refresh` endpoint. If any code path calls this method, it would set an invalid token. | Frontend: `authService.js` | Implement the real refresh call: `apiClient.post(API_ENDPOINTS.REFRESH, { refreshToken })` and wire it into the 401 interceptor (see Gap G15). |
 | I17 | Invalid Role | `DealerCustomerController` and `VehicleController` use `PLATFORM_ADMIN` in their `@PreAuthorize("hasRole('PLATFORM_ADMIN')")` annotations. This role does not exist in `User.getAuthorities()` (which produces `ROLE_SYSTEM_ADMIN`, `ROLE_SALES_MANAGER`, etc.). No user can satisfy this check, making those endpoints unreachable. | Backend: `DealerCustomerController.java`, `VehicleController.java` | Replace `PLATFORM_ADMIN` with `SYSTEM_ADMIN` in all `@PreAuthorize` annotations on these controllers. |
-| I18 | Broken Link | `Dashboard.jsx` contains a link to `/vendors/new` (e.g., "Add Vendor" shortcut), but the correct route path is `/vendors/add`. Clicking this link navigates to a non-existent route. | Frontend: `Dashboard.jsx` | Change the link `href`/`to` from `/vendors/new` to `/vendors/add`. |
-| I19 | Missing Validation | `EnhancedVendorWizard.isStepValid` checks that required fields are non-empty strings but does not call `validatePostalCode`, `validatePhoneNumber`, or `validateStreetNumber` formatters/validators. Invalid formats (e.g., wrong postal code pattern) are accepted. | Frontend: `EnhancedVendorWizard.jsx` | Add format validation calls in `isStepValid` for the address and contact steps, matching the validation approach used in `LeadWizard.validateCurrentStep`. |
-| I20 | Formatter Bug | `EnhancedVendorWizard` calls `handlePostalCodeChange(value)` with 1 argument (just the value), but the formatter function signature in `formatters.js` is `handlePostalCodeChange(value, onChange)` expecting 2 arguments. Without the `onChange` callback, the formatted value is never applied to form state. | Frontend: `EnhancedVendorWizard.jsx` | Fix to pass both arguments: `handlePostalCodeChange(value, (formatted) => setFormData(prev => ({ ...prev, postalCode: formatted })))`, matching how `LeadWizard` uses the formatter. |
-| I21 | Naming Inconsistency | Frontend uses "Vendor" terminology everywhere (pages, components, routes, labels) and sends `userRoles` keys as `VENDOR_ADMIN`, `VENDOR_EMPLOYEE`, `VENDOR_TECHNICIAN`. Backend uses "Dealer" in code, APIs (`/dealers`), and `RoleConstants` defines `DEALER_ADMIN`, `DEALER_TECHNICIAN`. The role keys don't match, so backend `validateUserAccessManagement` rejects frontend-sent role names. | Both | Either: (a) Change backend `DealerService.isValidDealerRole` to accept `VENDOR_*` aliases, or (b) Change frontend `UserRole` enum and `UserAccessManagement` to send `DEALER_ADMIN`/`DEALER_TECHNICIAN` keys, or (c) Add a mapping layer in the API service. |
+| I18 | Broken Link | `Dashboard.jsx` contains a link to `/dealers/new` (e.g., "Add Dealer" shortcut), but the correct route path is `/dealers/add`. Clicking this link navigates to a non-existent route. | Frontend: `Dashboard.jsx` | Change the link `href`/`to` from `/dealers/new` to `/dealers/add`. |
+| I19 | Missing Validation | `EnhancedDealerWizard.isStepValid` checks that required fields are non-empty strings but does not call `validatePostalCode`, `validatePhoneNumber`, or `validateStreetNumber` formatters/validators. Invalid formats (e.g., wrong postal code pattern) are accepted. | Frontend: `EnhancedDealerWizard.jsx` | Add format validation calls in `isStepValid` for the address and contact steps, matching the validation approach used in `LeadWizard.validateCurrentStep`. |
+| I20 | Formatter Bug | `EnhancedDealerWizard` calls `handlePostalCodeChange(value)` with 1 argument (just the value), but the formatter function signature in `formatters.js` is `handlePostalCodeChange(value, onChange)` expecting 2 arguments. Without the `onChange` callback, the formatted value is never applied to form state. | Frontend: `EnhancedDealerWizard.jsx` | Fix to pass both arguments: `handlePostalCodeChange(value, (formatted) => setFormData(prev => ({ ...prev, postalCode: formatted })))`, matching how `LeadWizard` uses the formatter. |
+| I21 | Naming Inconsistency | Frontend uses "Dealer" terminology everywhere (pages, components, routes, labels) and sends `userRoles` keys as `VENDOR_ADMIN`, `VENDOR_EMPLOYEE`, `VENDOR_TECHNICIAN`. Backend uses "Dealer" in code, APIs (`/dealers`), and `RoleConstants` defines `DEALER_ADMIN`, `DEALER_TECHNICIAN`. The role keys don't match, so backend `validateUserAccessManagement` rejects frontend-sent role names. | Both | Either: (a) Change backend `DealerService.isValidDealerRole` to accept `VENDOR_*` aliases, or (b) Change frontend `UserRole` enum and `UserAccessManagement` to send `DEALER_ADMIN`/`DEALER_TECHNICIAN` keys, or (c) Add a mapping layer in the API service. |
 | I22 | No Route Guard | All protected routes in `App.jsx` use `ProtectedRoute` without passing a `roles` prop. `ProtectedRoute` supports role checking (shows "Access Denied" if `roles.length > 0` and user role not in list), but since `roles` is always empty/undefined, any authenticated user can access any page by typing the URL directly (e.g., a SALES_AGENT can access `/subscription-plans`). | Frontend: `App.jsx` | Pass the `roles` array from each route configuration to `ProtectedRoute` for each nested route element: `<Route element={<ProtectedRoute roles={route.roles}>}>`. This leverages the existing role arrays in `routes.jsx`. |
 
 ---
@@ -1420,7 +1420,7 @@ This document covers **32 Feature Flows** across 4 modules, identifies **18 gaps
 | Lead | `pages/leads/LeadsList.jsx`, `AddLead.jsx`, `EditLead.jsx`, `LeadDetail.jsx`, `LeadsApproval.jsx` | `components/leads/LeadWizard.jsx`, `LeadDetailView.jsx`, `LeadValidationModal.jsx`, `LeadContactModal.jsx`, `LeadStatusBadge.jsx` | `services/leadsApiService.js` |
 | Subscription | `pages/subscription-plans/SubscriptionPlans.jsx` | `components/subscription-plans/SubscriptionPlansList.jsx`, `SubscriptionPlanForm.jsx` | `services/subscriptionPlansApiService.js` |
 | Access Control | — | `components/auth/LoginForm.jsx`, `contexts/AuthContext.jsx` | `services/authService.js`, `services/apiClient.js` |
-| Dealer | `pages/vendors/VendorsList.jsx`, `AddVendor.jsx`, `VendorDetail.jsx`, `EditVendor.jsx` | `components/vendors/EnhancedVendorWizard.jsx`, `VendorDetailView.jsx`, `EditVendorForm.jsx`, `UserAccessManagement.jsx` | `services/vendorsApiService.js` |
+| Dealer | `pages/dealers/DealersList.jsx`, `AddDealer.jsx`, `DealerDetail.jsx`, `EditDealer.jsx` | `components/dealers/EnhancedDealerWizard.jsx`, `DealerDetailView.jsx`, `EditDealerForm.jsx`, `UserAccessManagement.jsx` | `services/dealersApiService.js` |
 
 ### Shared
 

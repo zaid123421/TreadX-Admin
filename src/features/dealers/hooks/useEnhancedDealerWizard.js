@@ -2,18 +2,18 @@ import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { leadsService } from '../../leads/services/leadsApiService';
 import { LeadStatus, UserRole } from '@/shared/types/enums';
-import { defaultVendorRequest } from '@/features/vendors/types/vendorDefaults';
-import { vendorsService } from '../services/vendorsApiService';
+import { defaultDealerRequest } from '@/features/dealers/types/dealerDefaults';
+import { dealersService } from '../services/dealersApiService';
 import { subscriptionPlansService } from '@/features/subscriptions';
 import { validatePostalCode, validatePhoneNumber, validateStreetNumber } from '../../leads/utils/leadUtils';
 import { toast } from 'sonner';
-import { getVendorWizardSteps } from '../utils/vendorWizardSteps';
+import { getDealerWizardSteps } from '../utils/dealerWizardSteps';
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
 }
 
-export function useEnhancedVendorWizard({ onClose, onSuccess }) {
+export function useEnhancedDealerWizard({ onClose, onSuccess }) {
   const query = useQuery();
   const leadIdFromQuery = query.get('leadId');
   const [currentStep, setCurrentStep] = useState(0);
@@ -25,7 +25,7 @@ export function useEnhancedVendorWizard({ onClose, onSuccess }) {
   const [totalPages, setTotalPages] = useState(0);
   const [selectedLead, setSelectedLead] = useState(null);
   const [formData, setFormData] = useState({
-    ...defaultVendorRequest,
+    ...defaultDealerRequest,
     totalUsers: 0,
     userRoles: {
       [UserRole.DEALER_ADMIN]: 0,
@@ -41,7 +41,7 @@ export function useEnhancedVendorWizard({ onClose, onSuccess }) {
   const [error, setError] = useState(null);
   const [subscriptionPlans, setSubscriptionPlans] = useState([]);
 
-  const WIZARD_STEPS = getVendorWizardSteps(!!leadIdFromQuery);
+  const WIZARD_STEPS = getDealerWizardSteps(!!leadIdFromQuery);
 
   useEffect(() => {
     if (!leadIdFromQuery) {
@@ -68,7 +68,7 @@ export function useEnhancedVendorWizard({ onClose, onSuccess }) {
           email: lead.contactEmail || lead.email || prev.email,
         }));
       } catch (err) {
-        console.error('Failed to load lead for vendor conversion', err);
+        console.error('Failed to load lead for dealer conversion', err);
       } finally {
         setLoading(false);
       }
@@ -138,18 +138,19 @@ export function useEnhancedVendorWizard({ onClose, onSuccess }) {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const vendorData = {
+      const dealerData = {
         ...formData,
         totalUsers: formData.totalUsers,
         userRoles: formData.userRoles,
       };
 
-      const response = await vendorsService.createVendor(vendorData);
-      toast.success('Vendor created successfully!');
+      const response = await dealersService.createDealer(dealerData);
+      toast.success('Dealer created successfully!');
       onSuccess(response);
     } catch (err) {
-      console.error('Error creating vendor:', err);
-      toast.error(err.message || 'Failed to create vendor');
+      console.error('Error creating dealer:', err);
+      console.error('Error creating dealer:', err);
+      toast.error(err.message || 'Failed to create dealer');
     } finally {
       setIsSubmitting(false);
     }

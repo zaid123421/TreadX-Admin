@@ -2,7 +2,7 @@
   "welcome": "مرحباً بعودتك، {{name}}!",
   "welcomeSubtitle": "إليك ما يحدث اليوم في مبيعات الإطارات.",
   "totalLeads": "إجمالي العملاء المحتملين",
-  "vendors": "الموردون",
+  "dealers": "الموردون",
   "monthlyRevenue": "الإيرادات الشهرية",
   "leadStatusOverview": "حالة العملاء المحتملين",
   "leadStatusDescription": "التوزيع الحالي للعملاء حسب الحالة",
@@ -12,8 +12,8 @@
   "quickActionsDescription": "المهام والاختصارات الأكثر استخداماً",
   "createLead": "إنشاء عميل جديد",
   "createLeadDesc": "إضافة فرصة مبيعات جديدة",
-  "addVendor": "إضافة مورد",
-  "addVendorDesc": "تسجيل مورد إطارات جديد",
+  "addDealer": "إضافة مورد",
+  "addDealerDesc": "تسجيل مورد إطارات جديد",
   "inventoryCheck": "فحص المخزون",
   "inventoryCheckDesc": "مراجعة مستويات مخزون الإطارات",
   "noLeads": "لا توجد عملاء حالياً",
@@ -25,7 +25,8 @@
     "APPROVED": "مقبول",
     "DENIED": "مرفوض",
     "CONTACTED": "تم التواصل",
-    "ONBOARDED": "تم الإعداد",
+    "PENDING_CONVERSION": "قيد التحويل",
+    "UNQUALIFIED": "غير مؤهل",
     "DONE": "مكتمل"
   }
 }

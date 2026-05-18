@@ -4,7 +4,8 @@
     "APPROVED": "مقبول",
     "DENIED": "مرفوض",
     "CONTACTED": "تم التواصل",
-    "ONBOARDED": "تم الإعداد",
+    "PENDING_CONVERSION": "قيد التحويل",
+    "UNQUALIFIED": "غير مؤهل",
     "DONE": "مكتمل"
   }
 }

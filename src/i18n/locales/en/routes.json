@@ -3,7 +3,7 @@
   "leads": "Leads",
   "leadsApproval": "Approve Leads",
   "conversionRequests": "Conversion Requests",
-  "vendors": "Vendors",
+  "dealers": "Dealers",
   "subscriptionPlans": "Subscription Plans",
   "subscriptions": "Subscriptions",
   "users": "Users",
@@ -13,5 +13,5 @@
   "reports": "Reports",
   "settings": "Settings",
   "leadsManagement": "Leads Management",
-  "vendorsManagement": "Vendor Management"
+  "dealersManagement": "Dealer Management"
 }

@@ -29,6 +29,7 @@ export function SubscriptionsView({
 }) {
   const [openId, setOpenId] = useState(null);
   const [reason, setReason] = useState('');
+  const [deleteOpenId, setDeleteOpenId] = useState(null);
   const [editSubscription, setEditSubscription] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -140,14 +141,30 @@ export function SubscriptionsView({
                           </AlertDialogContent>
                         </AlertDialog>
 
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          className="h-8 bg-transparent border border-destructive/30 text-destructive hover:bg-destructive hover:text-white transition-colors"
-                          onClick={() => handleDelete(s.id)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
+                        <AlertDialog open={deleteOpenId === s.id} onOpenChange={(open) => { if (!open) setDeleteOpenId(null); }}>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              className="h-8 bg-transparent border border-destructive/30 text-destructive hover:bg-destructive hover:text-white transition-colors"
+                              onClick={() => setDeleteOpenId(s.id)}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Subscription</AlertDialogTitle>
+                              <AlertDialogDescription className="text-white">Are you sure you want to delete this subscription? This action cannot be undone.</AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction asChild>
+                                <Button className="bg-destructive hover:bg-destructive/90 text-white" onClick={() => { handleDelete(s.id); setDeleteOpenId(null); }}>Delete</Button>
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                     </TableCell>
                   </TableRow>

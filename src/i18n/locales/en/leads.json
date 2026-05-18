@@ -4,7 +4,8 @@
     "APPROVED": "Approved",
     "DENIED": "Denied",
     "CONTACTED": "Contacted",
-    "ONBOARDED": "Onboarded",
+    "PENDING_CONVERSION": "Pending Conversion",
+    "UNQUALIFIED": "Unqualified",
     "DONE": "Completed"
   }
 }
