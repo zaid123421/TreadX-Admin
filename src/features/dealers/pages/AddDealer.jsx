@@ -1,28 +1,28 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import EnhancedVendorWizard from '../components/EnhancedVendorWizard';
+import EnhancedDealerWizard from '../components/EnhancedDealerWizard';
 
-const AddVendor = () => {
+const AddDealer = () => {
   const navigate = useNavigate();
 
   const handleSuccess = () => {
-    // Show success message and navigate to vendors list
-    navigate('/vendors', {
+    // Show success message and navigate to dealers list
+    navigate('/dealers', {
       state: {
-        message: `Vendor has been created successfully!`,
+        message: `Dealer has been created successfully!`,
         type: 'success'
       }
     });
   };
 
   const handleCancel = () => {
-    navigate('/vendors');
+    navigate('/dealers');
   };
 
   return (
     <div className="min-h-screen bg-background py-8 px-4 sm:px-6 lg:py-12 flex justify-center">
       <div className="w-full max-w-4xl rounded-xl border border-border bg-card text-card-foreground shadow-lg p-6 sm:p-8">
-        <EnhancedVendorWizard
+        <EnhancedDealerWizard
           onSuccess={handleSuccess}
           onClose={handleCancel}
         />
@@ -31,4 +31,4 @@ const AddVendor = () => {
   );
 };
 
-export default AddVendor; 
+export default AddDealer; 

@@ -2,7 +2,7 @@
   "welcome": "Welcome back, {{name}}!",
   "welcomeSubtitle": "Here is what is happening with your tire sales today.",
   "totalLeads": "Total Leads",
-  "vendors": "Vendors",
+  "dealers": "Dealers",
   "monthlyRevenue": "Monthly Revenue",
   "leadStatusOverview": "Lead Status Overview",
   "leadStatusDescription": "Current distribution of leads by status",
@@ -12,8 +12,8 @@
   "quickActionsDescription": "Common tasks and shortcuts",
   "createLead": "Create New Lead",
   "createLeadDesc": "Add a new sales opportunity",
-  "addVendor": "Add Vendor",
-  "addVendorDesc": "Register a new tire vendor",
+  "addDealer": "Add Dealer",
+  "addDealerDesc": "Register a new tire dealer",
   "inventoryCheck": "Inventory Check",
   "inventoryCheckDesc": "Review tire stock levels",
   "noLeads": "No leads found",
@@ -25,7 +25,8 @@
     "APPROVED": "Approved",
     "DENIED": "Denied",
     "CONTACTED": "Contacted",
-    "ONBOARDED": "Onboarded",
+    "PENDING_CONVERSION": "Pending Conversion",
+    "UNQUALIFIED": "Unqualified",
     "DONE": "Completed"
   }
 }

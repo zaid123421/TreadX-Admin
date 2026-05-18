@@ -1,20 +1,20 @@
 # TreadX Sales Management Frontend
 
-A modern, user-friendly React frontend for tire storage service sales management, designed specifically for tire vendors and mechanics.
+A modern, user-friendly React frontend for tire storage service sales management, designed specifically for tire dealers and mechanics.
 
 ## 🚀 Features
 
 ### Core Functionality
 - **Dashboard**: Overview of key metrics, recent activities, and quick actions
 - **Leads Management**: Complete CRUD operations for sales opportunities
-- **Vendor Management**: Manage tire vendors, distributors, and service providers
+- **Dealer Management**: Manage tire dealers, distributors, and service providers
 - **Authentication**: Role-based access control with different user permissions
 - **Responsive Design**: Mobile-friendly interface that works on all devices
 
 ### User Roles
 - **Admin**: Full system access and user management
-- **Manager**: Lead and vendor management, team oversight
-- **Sales Rep**: Lead creation and management, vendor interaction
+- **Manager**: Lead and dealer management, team oversight
+- **Sales Rep**: Lead creation and management, dealer interaction
 - **Mechanic**: Inventory access and basic lead viewing
 
 ### Key Features
@@ -69,7 +69,7 @@ The application includes demo authentication with the following credentials:
 | Role | Email | Password | Access Level |
 |------|-------|----------|--------------|
 | Admin | admin@treadx.com | admin123 | Full system access |
-| Manager | manager@treadx.com | manager123 | Lead & vendor management |
+| Manager | manager@treadx.com | manager123 | Lead & dealer management |
 | Sales Rep | sales@treadx.com | sales123 | Lead creation & management |
 
 ## 🏗 Project Structure
@@ -82,14 +82,14 @@ src/
 │   └── layout/          # Layout components
 ├── pages/               # Page components
 │   ├── leads/           # Lead management pages
-│   ├── vendors/         # Vendor management pages
+│   ├── dealers/         # Dealer management pages
 │   └── Dashboard.jsx    # Main dashboard
 ├── contexts/            # React contexts
 │   └── AuthContext.jsx # Authentication context
 ├── services/            # API service functions
 │   ├── authService.js   # Authentication API
 │   ├── leadsService.js  # Leads API
-│   └── vendorsService.js # Vendors API
+│   └── dealersService.js # Dealers API
 ├── types/               # Type definitions
 ├── lib/                 # Utility functions
 └── App.jsx             # Main application component
@@ -114,12 +114,12 @@ GET    /api/leads/:id
 PUT    /api/leads/:id
 DELETE /api/leads/:id
 
-Vendors:
-GET    /api/vendors
-POST   /api/vendors
-GET    /api/vendors/:id
-PUT    /api/vendors/:id
-DELETE /api/vendors/:id
+Dealers:
+GET    /api/dealers
+POST   /api/dealers
+GET    /api/dealers/:id
+PUT    /api/dealers/:id
+DELETE /api/dealers/:id
 
 Files:
 POST   /api/files/upload
@@ -231,5 +231,5 @@ For technical support or questions about the TreadX Sales Management system, ple
 
 ---
 
-**TreadX Sales Management** - Streamlining tire sales for vendors and mechanics.
+**TreadX Sales Management** - Streamlining tire sales for dealers and mechanics.
 

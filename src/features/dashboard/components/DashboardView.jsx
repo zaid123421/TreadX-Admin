@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 
 export function DashboardView({ user, vm }) {
   const { t } = useTranslation('dashboard');
-  const { totalLeads, totalVendors, monthlyRevenue, leadStatusData, loading } = vm;
+  const { totalLeads, totalDealers, monthlyRevenue, leadStatusData, loading } = vm;
 
   return (
     <div className="space-y-6">
@@ -45,7 +45,7 @@ export function DashboardView({ user, vm }) {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('vendors')}</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('dealers')}</CardTitle>
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -54,7 +54,7 @@ export function DashboardView({ user, vm }) {
                 <div className="h-8 w-12 rounded bg-muted"></div>
               </div>
             ) : (
-              <div className="text-2xl font-bold">{totalVendors}</div>
+              <div className="text-2xl font-bold">{totalDealers}</div>
             )}
           </CardContent>
         </Card>
@@ -91,18 +91,33 @@ export function DashboardView({ user, vm }) {
               </div>
             ) : (
               <div className="space-y-4">
-                {leadStatusData.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-3 h-3 rounded-full ${item.color}`} />
-                      <span className="text-sm font-medium">{t(`statuses.${item.status}`)}</span>
+                {(() => {
+                  const desiredOrder = [
+                    'PENDING',
+                    'APPROVED',
+                    'DENIED',
+                    'CONTACTED',
+                    'PENDING_CONVERSION',
+                    'UNQUALIFIED',
+                    'DONE',
+                  ];
+                  const data = Array.isArray(leadStatusData) ? leadStatusData : [];
+                  const ordered = desiredOrder.map((s) => data.find((it) => it.status === s) || { status: s, count: 0, color: 'bg-muted' });
+
+                  if (data.length === 0) {
+                    return <p className="text-sm text-muted-foreground py-4 text-center">{t('noLeads')}</p>;
+                  }
+
+                  return ordered.map((item, index) => (
+                    <div key={index} className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-3 h-3 rounded-full ${item.color}`} />
+                        <span className="text-sm font-medium">{t(`statuses.${item.status}`)}</span>
+                      </div>
+                      <Badge variant="secondary">{item.count}</Badge>
                     </div>
-                    <Badge variant="secondary">{item.count}</Badge>
-                  </div>
-                ))}
-                {leadStatusData.length === 0 && (
-                  <p className="text-sm text-muted-foreground py-4 text-center">{t('noLeads')}</p>
-                )}
+                  ));
+                })()}
               </div>
             )}
           </CardContent>
@@ -153,12 +168,12 @@ export function DashboardView({ user, vm }) {
                 </div>
               </div>
             </Link>
-            <Link to="/vendors/add" className="block cursor-pointer rounded-lg border border-border p-4 transition-colors hover:bg-muted/40">
+            <Link to="/dealers/add" className="block cursor-pointer rounded-lg border border-border p-4 transition-colors hover:bg-muted/40">
               <div className="flex items-center gap-3">
                 <Building2 className="h-8 w-8 text-success" />
                 <div>
-                  <h3 className="font-medium">{t('addVendor')}</h3>
-                  <p className="text-sm text-muted-foreground">{t('addVendorDesc')}</p>
+                  <h3 className="font-medium">{t('addDealer')}</h3>
+                  <p className="text-sm text-muted-foreground">{t('addDealerDesc')}</p>
                 </div>
               </div>
             </Link>

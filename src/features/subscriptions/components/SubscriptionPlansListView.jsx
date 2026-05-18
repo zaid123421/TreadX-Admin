@@ -69,7 +69,7 @@ export function SubscriptionPlansListView(props) {
           <h1 className="text-2xl font-bold text-foreground">Subscription Plans</h1>
           <p className="text-sm text-muted-foreground">
             {canManagePlans
-              ? 'Manage subscription plans for vendors'
+              ? 'Manage subscription plans for dealers'
               : 'View active subscription plans (read-only).'}
           </p>
         </div>

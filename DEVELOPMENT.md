@@ -41,12 +41,12 @@ export const DEV_CONFIG = {
 
 The following backend endpoints must be available:
 
-**Vendors:**
-- `GET /api/v1/vendors` - List vendors
-- `POST /api/v1/vendors` - Create vendor
-- `GET /api/v1/vendors/{id}` - Get vendor details
-- `PUT /api/v1/vendors/{id}` - Update vendor
-- `DELETE /api/v1/vendors/{id}` - Delete vendor
+**Dealers:**
+- `GET /api/v1/dealers` - List dealers
+- `POST /api/v1/dealers` - Create dealer
+- `GET /api/v1/dealers/{id}` - Get dealer details
+- `PUT /api/v1/dealers/{id}` - Update dealer
+- `DELETE /api/v1/dealers/{id}` - Delete dealer
 
 **Subscription Plans:**
 - `GET /api/v1/subscription-plans/active` - List active plans
@@ -58,9 +58,9 @@ The following backend endpoints must be available:
 
 The application now uses real API data from your backend:
 
-### Vendors
-- Real vendor data from your database
-- New vendor ID format: `001010001` + vendor ID
+### Dealers
+- Real dealer data from your database
+- New dealer ID format: `001010001` + dealer ID
 - User access configuration included
 
 ### Subscription Plans
@@ -121,9 +121,9 @@ VITE_DEBUG_MODE=true
 ## 📋 Testing Checklist
 
 ### Mock Data Mode
-- [ ] Vendors list displays with new ID format
+- [ ] Dealers list displays with new ID format
 - [ ] Subscription plans page loads
-- [ ] User access data shows in vendor details
+- [ ] User access data shows in dealer details
 - [ ] Create/edit/delete operations work
 - [ ] Search and pagination work
 
@@ -146,7 +146,7 @@ VITE_DEBUG_MODE=true
 
 ### Custom Mock Data
 Edit the mock data files:
-- `src/services/vendorsApiService.js` - Vendor mock data
+- `src/services/dealersApiService.js` - Dealer mock data
 - `src/services/subscriptionPlansApiService.js` - Subscription plans mock data
 
 ### Custom API Configuration

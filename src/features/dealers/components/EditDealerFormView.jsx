@@ -8,15 +8,15 @@ import {
   handleStreetNumberChange,
 } from '../../leads/utils/leadUtils';
 
-export function EditVendorFormView({ formData, setFormData, loading, isSubmitting, error, handleSubmit }) {
-  if (loading) return <div className="p-8 text-center">Loading vendor...</div>;
+export function EditDealerFormView({ formData, setFormData, loading, isSubmitting, error, handleSubmit }) {
+  if (loading) return <div className="p-8 text-center">Loading dealer...</div>;
   if (error && !formData) return <div className="p-8 text-center text-red-600">{error}</div>;
-  if (!formData) return <div className="p-8 text-center">Vendor not found.</div>;
+  if (!formData) return <div className="p-8 text-center">Dealer not found.</div>;
 
   return (
     <Card className="max-w-2xl mx-auto mt-8">
       <CardHeader>
-        <CardTitle>Edit Vendor</CardTitle>
+        <CardTitle>Edit Dealer</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">

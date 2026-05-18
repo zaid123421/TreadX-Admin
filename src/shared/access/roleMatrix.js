@@ -72,7 +72,7 @@ export function canAssignLead(user) {
 }
 
 /** DLR-01 / DLR-02: Dealer creation from lead — not Sales Agent */
-export function canConvertLeadToVendor(user) {
+export function canConvertLeadToDealer(user) {
   return user?.roleName === ROLE.SYSTEM_ADMIN || user?.roleName === ROLE.SALES_MANAGER;
 }
 

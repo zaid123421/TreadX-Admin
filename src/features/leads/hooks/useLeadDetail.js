@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/app/providers/AuthContext';
 import {
-  canConvertLeadToVendor,
+  canConvertLeadToDealer,
   canDeleteLead,
   canEditLead,
   canSalesAgentViewLead,
@@ -22,6 +22,8 @@ export function useLeadDetail() {
   const [showValidationModal, setShowValidationModal] = useState(false);
   const [takingLead, setTakingLead] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [previewContentType, setPreviewContentType] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState(null);
   const [assigning, setAssigning] = useState(false);
   const [agents, setAgents] = useState([]);
@@ -76,7 +78,9 @@ export function useLeadDetail() {
   const loadPreviewUrl = async (leadId) => {
     try {
       const response = await leadsService.getLeadPreviewResponse(leadId);
+      const contentType = response.headers['content-type'];
       const blobUrl = URL.createObjectURL(response.data);
+      setPreviewContentType(contentType);
       setPreviewUrl(blobUrl);
     } catch (error) {
       console.error('Failed to load preview URL:', error);
@@ -110,22 +114,23 @@ export function useLeadDetail() {
     }
   };
 
-  const handleDelete = async () => {
-    if (window.confirm('Are you sure you want to delete this lead?')) {
-      try {
-        await leadsService.deleteLead(id);
-        navigate('/leads', {
-          state: {
-            message: 'Lead has been deleted successfully',
-            type: 'success',
-          },
-        });
-      } catch (err) {
-        setError(err.message);
-      }
-    }
-  };
-
+const handleDelete = async () => {
+  // قمنا بحذف الـ if (window.confirm(...)) من هنا لأن التأكيد يتم الآن عبر الـ UI المخصص
+  try {
+    setDeleting(true);
+    await leadsService.deleteLead(id);
+    navigate('/leads', {
+      state: {
+        message: 'Lead has been deleted successfully',
+        type: 'success',
+      },
+    });
+  } catch (err) {
+    setError(err.message || 'Failed to delete lead');
+  } finally {
+    setDeleting(false);
+  }
+};
   const handleAssignLead = async () => {
     if (!selectedAgentId || !lead?.id) return;
     try {
@@ -196,7 +201,7 @@ export function useLeadDetail() {
 
   const canEditLeadFlag = lead && user ? canEditLead(lead, user) : false;
   const canDeleteLeadFlag = lead && user ? canDeleteLead(lead, user) : false;
-  const canConvertVendorFlag = user ? canConvertLeadToVendor(user) : false;
+  const canConvertDealerFlag = user ? canConvertLeadToDealer(user) : false;
 
   return {
     id,
@@ -208,7 +213,7 @@ export function useLeadDetail() {
     error,
     canEditLead: canEditLeadFlag,
     canDeleteLead: canDeleteLeadFlag,
-    canConvertLeadToVendor: canConvertVendorFlag,
+    canConvertLeadToDealer: canConvertDealerFlag,
     showContactModal,
     setShowContactModal,
     showValidationModal,
@@ -230,5 +235,7 @@ export function useLeadDetail() {
     handleDownload,
     formatDate,
     getInitials: getBusinessInitials,
+    previewContentType,
+    deleting,
   };
 }

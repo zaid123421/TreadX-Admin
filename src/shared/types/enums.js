@@ -5,7 +5,8 @@ export const LeadStatus = {
   APPROVED: 'APPROVED',
   DENIED: 'DENIED',
   CONTACTED: 'CONTACTED',
-  ONBOARDED: 'ONBOARDED',
+  PENDING_CONVERSION: 'PENDING_CONVERSION',
+  UNQUALIFIED: 'UNQUALIFIED',
   DONE: 'DONE',
 };
 
@@ -21,7 +22,7 @@ export const ContactMethod = {
   OTHER: 'OTHER',
 };
 
-export const VendorStatus = {
+export const DealerStatus = {
   ACTIVE: 'ACTIVE',
   INACTIVE: 'INACTIVE',
 };

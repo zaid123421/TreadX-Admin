@@ -1,6 +1,6 @@
-import { VendorStatus } from '@/shared/types/enums';
+import { DealerStatus } from '@/shared/types/enums';
 
-export const defaultVendorRequest = {
+export const defaultDealerRequest = {
   leadId: null,
   legalName: '',
   businessName: '',
@@ -10,17 +10,17 @@ export const defaultVendorRequest = {
   postalCode: '',
   email: '',
   phoneNumber: '',
-  status: VendorStatus.ACTIVE,
+  status: DealerStatus.ACTIVE,
 };
 
-export const defaultVendorResponse = {
+export const defaultDealerResponse = {
   id: null,
   legalName: '',
   businessName: '',
   email: '',
   phoneNumber: '',
-  vendorUniqueId: '',
-  status: VendorStatus.ACTIVE,
+  dealerUniqueId: '',
+  status: DealerStatus.ACTIVE,
   streetNumber: '',
   streetName: '',
   aptUnitBldg: '',

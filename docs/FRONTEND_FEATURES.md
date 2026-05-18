@@ -1,6 +1,6 @@
 # TreadX Frontend Features Implementation
 
-This document outlines the new frontend features implemented for the TreadX vendor management system.
+This document outlines the new frontend features implemented for the TreadX dealer management system.
 
 ## 🚀 New Features Implemented
 
@@ -28,10 +28,10 @@ This document outlines the new frontend features implemented for the TreadX vend
 - `PUT /api/v1/subscription-plans/{id}` - Update plan
 - `DELETE /api/v1/subscription-plans/{id}` - Delete plan
 
-### 2. Enhanced Vendor Creation with User Access Management
+### 2. Enhanced Dealer Creation with User Access Management
 
 **Components Created:**
-- `EnhancedVendorWizard.jsx` - Multi-step vendor creation wizard
+- `EnhancedDealerWizard.jsx` - Multi-step dealer creation wizard
 - `UserAccessManagement.jsx` - User role and count management component
 
 **Features:**
@@ -46,25 +46,25 @@ This document outlines the new frontend features implemented for the TreadX vend
 - ✅ Review and confirmation step
 
 **User Roles Supported:**
-- `VENDOR_ADMIN` - Full access to vendor management
+- `VENDOR_ADMIN` - Full access to dealer management
 - `VENDOR_EMPLOYEE` - Standard access to operations
 - `VENDOR_TECHNICIAN` - Technical access for maintenance
 
 **API Integration:**
-- Enhanced `POST /api/v1/vendors` with user access data
-- `GET /api/v1/vendors/{id}` with user access information
+- Enhanced `POST /api/v1/dealers` with user access data
+- `GET /api/v1/dealers/{id}` with user access information
 
-### 3. Updated Vendor ID Format
+### 3. Updated Dealer ID Format
 
 **Components Updated:**
-- `VendorDetailView.jsx` - Updated to show new vendor ID format
-- `VendorsList.jsx` - Added vendor ID column with new format
-- `vendorUtils.js` - Utility functions for vendor ID formatting
+- `DealerDetailView.jsx` - Updated to show new dealer ID format
+- `DealersList.jsx` - Added dealer ID column with new format
+- `dealerUtils.js` - Utility functions for dealer ID formatting
 
 **Features:**
-- ✅ New vendor ID format: `001010001` + vendor ID
+- ✅ New dealer ID format: `001010001` + dealer ID
 - ✅ Examples: `0010100011`, `00101000110`, `001010001100`
-- ✅ Vendor ID validation and formatting
+- ✅ Dealer ID validation and formatting
 - ✅ Display formatting with monospace font and background
 - ✅ Utility functions for ID manipulation
 
@@ -104,23 +104,23 @@ src/
 │   ├── subscription-plans/
 │   │   ├── SubscriptionPlansList.jsx
 │   │   └── SubscriptionPlanForm.jsx
-│   ├── vendors/
-│   │   ├── EnhancedVendorWizard.jsx
+│   ├── dealers/
+│   │   ├── EnhancedDealerWizard.jsx
 │   │   ├── UserAccessManagement.jsx
-│   │   └── VendorDetailView.jsx (updated)
+│   │   └── DealerDetailView.jsx (updated)
 │   └── leads/
 │       └── LeadStatusBadge.jsx
 ├── services/
 │   └── subscriptionPlansApiService.js
 ├── utils/
-│   └── vendorUtils.js
+│   └── dealerUtils.js
 ├── types/
 │   └── api.js (updated)
 └── pages/
     ├── subscription-plans/
     │   └── SubscriptionPlans.jsx
-    └── vendors/
-        └── AddVendor.jsx (updated)
+    └── dealers/
+        └── AddDealer.jsx (updated)
 ```
 
 ### API Service Integration
@@ -132,9 +132,9 @@ src/
 - Pagination support
 - Search functionality
 
-**Enhanced Vendor Service:**
+**Enhanced Dealer Service:**
 - Updated to handle user access data
-- New vendor ID format support
+- New dealer ID format support
 - Enhanced validation
 
 ### Form Validation
@@ -193,8 +193,8 @@ Set `USE_MOCK_DATA = true` in `apiClient.js` for development without backend.
 
 3. **Access Features:**
    - Subscription Plans: `/subscription-plans`
-   - Enhanced Vendor Creation: `/vendors/new`
-   - Vendor Management: `/vendors`
+   - Enhanced Dealer Creation: `/dealers/new`
+   - Dealer Management: `/dealers`
 
 ## 📋 Testing Checklist
 
@@ -208,7 +208,7 @@ Set `USE_MOCK_DATA = true` in `apiClient.js` for development without backend.
 - [ ] Form validation works
 - [ ] Error handling displays properly
 
-### Enhanced Vendor Creation
+### Enhanced Dealer Creation
 - [ ] Multi-step wizard navigation
 - [ ] Lead selection from contacted leads
 - [ ] Business information form
@@ -217,13 +217,13 @@ Set `USE_MOCK_DATA = true` in `apiClient.js` for development without backend.
 - [ ] User access management
 - [ ] Role distribution validation
 - [ ] Review step shows all data
-- [ ] Vendor creation success
+- [ ] Dealer creation success
 
-### Vendor ID Format
-- [ ] New vendor IDs display correctly
-- [ ] Existing vendor IDs are formatted
-- [ ] Vendor ID validation works
-- [ ] Search by vendor ID works
+### Dealer ID Format
+- [ ] New dealer IDs display correctly
+- [ ] Existing dealer IDs are formatted
+- [ ] Dealer ID validation works
+- [ ] Search by dealer ID works
 
 ### Lead Status
 - [ ] Status badges display correctly
@@ -234,7 +234,7 @@ Set `USE_MOCK_DATA = true` in `apiClient.js` for development without backend.
 ## 🔮 Future Enhancements
 
 1. **Advanced User Management:**
-   - Individual user creation within vendors
+   - Individual user creation within dealers
    - User permission management
    - User activity tracking
 
@@ -249,7 +249,7 @@ Set `USE_MOCK_DATA = true` in `apiClient.js` for development without backend.
    - Email domain validation
 
 4. **Bulk Operations:**
-   - Bulk vendor creation
+   - Bulk dealer creation
    - Bulk user assignment
    - Import/export functionality
 

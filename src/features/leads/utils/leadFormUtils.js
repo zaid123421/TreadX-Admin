@@ -43,7 +43,7 @@ export const normalizeLeadToForm = (lead) => {
     uploadedFile: lead.uploadedFile ?? '',
     status: lead.status ?? defaultLeadRequest.status,
     notes,
-    vendorId: lead.vendorId ?? lead.dealerId ?? null,
+    dealerId: lead.dealerId ?? lead.dealerId ?? null,
   };
 };
 

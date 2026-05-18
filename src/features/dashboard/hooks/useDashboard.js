@@ -6,7 +6,7 @@ import { leadsService } from '@/features/leads';
 
 export function useDashboard() {
   const [totalLeads, setTotalLeads] = useState(0);
-  const [totalVendors, setTotalVendors] = useState(0);
+  const [totalDealers, setTotalDealers] = useState(0);
   const [monthlyRevenue] = useState(0);
   const [leadStatusData, setLeadStatusData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -19,8 +19,8 @@ export function useDashboard() {
         const leadsResponse = await apiClient.get(`${API_ENDPOINTS.LEADS}?page=0&size=1`);
         setTotalLeads(leadsResponse.data.totalElements || 0);
 
-        const vendorsResponse = await apiClient.get(`${API_ENDPOINTS.VENDORS}?page=0&size=1`);
-        setTotalVendors(vendorsResponse.data.totalElements || 0);
+        const dealersResponse = await apiClient.get(`${API_ENDPOINTS.DEALERS}?page=0&size=1`);
+        setTotalDealers(dealersResponse.data.totalElements || 0);
 
         const allLeadsResponse = await leadsService.getLeads({ page: 0, size: 1000 });
         const leads = allLeadsResponse.content || [];
@@ -35,7 +35,8 @@ export function useDashboard() {
           { status: LeadStatus.APPROVED, count: statusCounts[LeadStatus.APPROVED] || 0, color: 'bg-success' },
           { status: LeadStatus.DENIED, count: statusCounts[LeadStatus.DENIED] || 0, color: 'bg-destructive' },
           { status: LeadStatus.CONTACTED, count: statusCounts[LeadStatus.CONTACTED] || 0, color: 'bg-info' },
-          { status: LeadStatus.ONBOARDED, count: statusCounts[LeadStatus.ONBOARDED] || 0, color: 'bg-accent' },
+          { status: LeadStatus.PENDING_CONVERSION, count: statusCounts[LeadStatus.PENDING_CONVERSION] || 0, color: 'bg-accent' },
+          { status: LeadStatus.UNQUALIFIED, count: statusCounts[LeadStatus.UNQUALIFIED] || 0, color: 'bg-muted-foreground' },
           { status: LeadStatus.DONE, count: statusCounts[LeadStatus.DONE] || 0, color: 'bg-muted-foreground' },
         ];
 
@@ -52,7 +53,7 @@ export function useDashboard() {
 
   return {
     totalLeads,
-    totalVendors,
+    totalDealers,
     monthlyRevenue,
     leadStatusData,
     loading,

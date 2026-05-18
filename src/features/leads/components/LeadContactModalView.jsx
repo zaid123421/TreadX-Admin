@@ -24,18 +24,8 @@ const getContactMethodIcon = (method) => {
 };
 
 const getContactMethodPlaceholder = (method) => {
-  switch (method) {
-    case ContactMethod.PHONE:
-      return 'Enter phone number';
-    case ContactMethod.MAIL_EMAIL:
-      return 'Enter email address';
-    case ContactMethod.TEXT:
-      return 'Enter mobile number for SMS';
-    case ContactMethod.OTHER:
-      return 'Enter contact details';
-    default:
-      return 'Enter contact details';
-  }
+  // Use the contact details field for notes about contact attempts, not for storing raw phone numbers
+  return 'Enter notes about contact attempts (do not include phone numbers)';
 };
 
 export function LeadContactModalView({

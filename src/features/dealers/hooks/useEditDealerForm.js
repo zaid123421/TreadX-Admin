@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { vendorsService } from '../services/vendorsApiService';
+import { dealersService } from '../services/dealersApiService';
 
-export function useEditVendorForm() {
+export function useEditDealerForm() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [formData, setFormData] = useState(null);
@@ -11,15 +11,15 @@ export function useEditVendorForm() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    loadVendor();
+    loadDealer();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  const loadVendor = async () => {
+  const loadDealer = async () => {
     try {
       setLoading(true);
-      const vendor = await vendorsService.getVendor(id);
-      setFormData(vendor);
+      const dealer = await dealersService.getDealer(id);
+      setFormData(dealer);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -32,15 +32,15 @@ export function useEditVendorForm() {
     setIsSubmitting(true);
     setError(null);
     try {
-      await vendorsService.updateVendor(id, formData);
-      navigate(`/vendors/${id}`, {
+      await dealersService.updateDealer(id, formData);
+      navigate(`/dealers/${id}`, {
         state: {
-          message: 'Vendor updated successfully!',
+          message: 'Dealer updated successfully!',
           type: 'success',
         },
       });
     } catch (err) {
-      setError(err.message || 'Failed to update vendor');
+      setError(err.message || 'Failed to update dealer');
     } finally {
       setIsSubmitting(false);
     }

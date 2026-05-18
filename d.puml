@@ -22,7 +22,7 @@ skinparam actorBackgroundColor<<d>> #D5F5E3
 actor "DEALER_TECHNICIAN" as TECH <<d>>
 actor "DEALER_ADMIN" as ADM <<d>>
 
-rectangle "Dealer / Vendor Operations (UC-VND-01 .. UC-VND-15)" {
+rectangle "Dealer / Dealer Operations (UC-VND-01 .. UC-VND-15)" {
   usecase "UC-VND-01 Initiate Service Session" as U01 <<tech>>
   usecase "UC-VND-02 Initial Anyline Scan (4)" as U02 <<tech>>
   usecase "UC-VND-03 Rotation" as U03 <<tech>>

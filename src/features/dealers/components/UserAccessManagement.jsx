@@ -21,7 +21,7 @@ const UserAccessManagement = ({
   const roleConfigs = {
     [UserRole.DEALER_ADMIN]: {
       label: 'Dealer Admin',
-      description: 'Full access to vendor management and user administration',
+      description: 'Full access to dealer management and user administration',
       icon: Shield,
       color: 'bg-red-100 text-red-800',
       maxCount: 10

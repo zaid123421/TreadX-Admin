@@ -1,12 +1,24 @@
-import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
-import { Button } from '@/shared/ui/button';
-import { Badge } from '@/shared/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
-import { Avatar, AvatarFallback } from '@/shared/ui/avatar';
-import { Separator } from '@/shared/ui/separator';
-import { Alert, AlertDescription } from '@/shared/ui/alert';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
+import React from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/shared/ui/card";
+import { Button } from "@/shared/ui/button";
+import { Badge } from "@/shared/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
+import { Separator } from "@/shared/ui/separator";
+import { Alert, AlertDescription } from "@/shared/ui/alert";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/ui/select";
 import {
   Building2,
   Phone,
@@ -27,19 +39,29 @@ import {
   Handshake,
   UserCheck,
   CheckCircle,
-} from 'lucide-react';
-import { LeadStatus } from '@/shared/types/enums';
-import { formatFullName } from '@/shared/utils/formatters';
-import LeadContactModal from './LeadContactModal';
-import LeadValidationModal from './LeadValidationModal';
-import ConversionRequestModal from './ConversionRequestModal';
+} from "lucide-react";
+import { LeadStatus } from "@/shared/types/enums";
+import { formatFullName } from "@/shared/utils/formatters";
+import LeadContactModal from "./LeadContactModal";
+import LeadValidationModal from "./LeadValidationModal";
+import ConversionRequestModal from "./ConversionRequestModal";
 import {
   formatPostalCode,
   formatPhoneNumber,
   getContactMethodLabel,
   getStatusColor,
   getStatusLabel,
-} from '../utils/leadUtils';
+} from "../utils/leadUtils";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/shared/ui/alert-dialog";
 
 export default function LeadDetailView({ vm }) {
   const {
@@ -52,7 +74,7 @@ export default function LeadDetailView({ vm }) {
     error,
     canEditLead,
     canDeleteLead,
-    canConvertLeadToVendor,
+    canConvertLeadToDealer,
     showContactModal,
     setShowContactModal,
     showValidationModal,
@@ -74,14 +96,23 @@ export default function LeadDetailView({ vm }) {
     handleDownload,
     formatDate,
     getInitials,
+    previewContentType,
+    deleting,
   } = vm;
 
   const [showConversionModal, setShowConversionModal] = React.useState(false);
-
+   const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
   const handleConversionModalSuccess = async () => {
     setShowConversionModal(false);
     await handleConversionSuccess();
-    vm.setMessage?.({ type: 'success', text: 'Conversion request submitted successfully' });
+    vm.setMessage?.({
+      type: "success",
+      text: "Conversion request submitted successfully",
+    });
+  };
+  const confirmDelete = async () => {
+    setShowDeleteDialog(false);
+    await handleDelete(); 
   };
 
   if (loading) {
@@ -95,7 +126,7 @@ export default function LeadDetailView({ vm }) {
     );
   }
 
-  if (error === 'Forbidden') {
+  if (error === "Forbidden") {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
         <div className="bg-red-100 rounded-full p-6 mb-4">
@@ -116,17 +147,16 @@ export default function LeadDetailView({ vm }) {
         </div>
         <h1 className="text-4xl font-bold text-red-600 mb-2">403 Forbidden</h1>
         <p className="text-muted-foreground mb-6">
-          You do not have permission to view this lead. Please contact your administrator if you believe this is a
-          mistake.
+          You do not have permission to view this lead. Please contact your
+          administrator if you believe this is a mistake.
         </p>
-        <Button onClick={() => navigate('/leads')}>Return to Leads</Button>
+        <Button onClick={() => navigate("/leads")}>Return to Leads</Button>
       </div>
     );
   }
 
   if (error) {
     return (
-      
       <div className="max-w-4xl mx-auto p-6">
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
@@ -148,13 +178,13 @@ export default function LeadDetailView({ vm }) {
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
       {message && (
-        <Alert variant={message.type === 'error' ? 'destructive' : 'default'}>
+        <Alert variant={message.type === "error" ? "destructive" : "default"}>
           <AlertDescription>{message.text}</AlertDescription>
         </Alert>
       )}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/leads')}>
+          <Button variant="ghost" size="sm" onClick={() => navigate("/leads")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Leads
           </Button>
@@ -166,43 +196,57 @@ export default function LeadDetailView({ vm }) {
         </div>
 
         <div className="flex items-center space-x-2">
-          <Badge style={getStatusColor(lead.status)}>{getStatusLabel(lead.status)}</Badge>
+          <Badge style={getStatusColor(lead.status)}>
+            {getStatusLabel(lead.status)}
+          </Badge>
 
-          {user?.roleName === 'SALES_AGENT' && lead.addedByManager && !lead.assignedTo && (
-            <Button
-              variant="default"
-              size="sm"
-              onClick={handleTakeLead}
-              disabled={takingLead}
-              className="bg-green-600 hover:bg-green-700 text-white"
-            >
-              {takingLead ? (
-                <>
-                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-2"></div>
-                  Taking...
-                </>
-              ) : (
-                <>
-                  <Handshake className="h-4 w-4 mr-2" />
-                  Take Lead
-                </>
-              )}
-            </Button>
-          )}
+          {user?.roleName === "SALES_AGENT" &&
+            lead.addedByManager &&
+            !lead.assignedTo && (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={handleTakeLead}
+                disabled={takingLead}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                {takingLead ? (
+                  <>
+                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-2"></div>
+                    Taking...
+                  </>
+                ) : (
+                  <>
+                    <Handshake className="h-4 w-4 mr-2" />
+                    Take Lead
+                  </>
+                )}
+              </Button>
+            )}
 
           {canEditLead && (
-            <Button variant="outline" size="sm" onClick={() => navigate(`/leads/${id}/edit`)}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate(`/leads/${id}/edit`)}
+            >
               <Edit className="h-4 w-4 mr-2" />
               Edit
             </Button>
           )}
 
-          {canDeleteLead && (
-            <Button variant="outline" size="sm" onClick={handleDelete}>
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete
-            </Button>
-          )}
+        {canDeleteLead && (
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="text-destructive hover:bg-destructive/10 hover:text-destructive" // تحسين شكل زر الحذف ليعطي إيحاء بالخطر
+          onClick={() => setShowDeleteDialog(true)} 
+          disabled={deleting}
+        >
+          <Trash2 className="h-4 w-4 mr-2" />
+          {deleting ? 'Deleting...' : 'Delete'}
+        </Button>
+      )}
         </div>
       </div>
 
@@ -219,7 +263,18 @@ export default function LeadDetailView({ vm }) {
                 <div>
                   <CardTitle className="text-xl">{lead.businessName}</CardTitle>
                   <CardDescription>
-                    Lead ID: {lead.id} • Created {formatDate(lead.createdAt)}
+                    Created{" "}
+                    {(() => {
+                      try {
+                        const date = new Date(lead.createdAt);
+                        // إذا كان التاريخ صالحاً يعرضه بصيغة YYYY-MM-DD، وإذا فشل يعود لنص التاريخ الأصلي أو كلمة 'N/A'
+                        return isNaN(date.getTime())
+                          ? "N/A"
+                          : date.toLocaleDateString("en-CA");
+                      } catch (e) {
+                        return "N/A";
+                      }
+                    })()}
                     {lead.addedByName && ` • Added by ${lead.addedByName}`}
                   </CardDescription>
                 </div>
@@ -250,7 +305,7 @@ export default function LeadDetailView({ vm }) {
                           <div className="text-muted-foreground">
                             {lead.formattedAddress ||
                               `${lead.streetNumber} ${lead.streetName}${
-                                lead.aptUnitBldg ? `, ${lead.aptUnitBldg}` : ''
+                                lead.aptUnitBldg ? `, ${lead.aptUnitBldg}` : ""
                               }, ${formatPostalCode(lead.postalCode)}`}
                           </div>
                         </div>
@@ -283,7 +338,9 @@ export default function LeadDetailView({ vm }) {
                         <div className="flex items-center space-x-2">
                           <UserCheck className="h-4 w-4 text-muted-foreground" />
                           <span className="font-medium">Added by Manager:</span>
-                          <span className="text-green-600 font-medium">Yes</span>
+                          <span className="text-green-600 font-medium">
+                            Yes
+                          </span>
                         </div>
                       )}
 
@@ -302,7 +359,9 @@ export default function LeadDetailView({ vm }) {
                   {lead.notes && (
                     <div className="mt-4">
                       <h4 className="font-medium mb-2">Notes</h4>
-                      <p className="text-muted-foreground bg-muted/40 p-3 rounded-lg">{lead.notes}</p>
+                      <p className="text-muted-foreground bg-muted/40 p-3 rounded-lg">
+                        {lead.notes}
+                      </p>
                     </div>
                   )}
                 </TabsContent>
@@ -329,7 +388,11 @@ export default function LeadDetailView({ vm }) {
                           <User className="h-4 w-4 text-muted-foreground" />
                           <span className="font-medium">Contact Person:</span>
                           <span>{lead.contactName}</span>
-                          {lead.position && <span className="text-muted-foreground">({lead.position})</span>}
+                          {lead.position && (
+                            <span className="text-muted-foreground">
+                              ({lead.position})
+                            </span>
+                          )}
                         </div>
                       )}
 
@@ -344,8 +407,13 @@ export default function LeadDetailView({ vm }) {
                   ) : (
                     <div className="text-center py-8">
                       <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <p className="text-muted-foreground">No contact information available</p>
-                      <Button className="mt-4" onClick={() => setShowContactModal(true)}>
+                      <p className="text-muted-foreground">
+                        No contact information available
+                      </p>
+                      <Button
+                        className="mt-4"
+                        onClick={() => setShowContactModal(true)}
+                      >
                         <PhoneCall className="h-4 w-4 mr-2" />
                         Initiate Contact
                       </Button>
@@ -361,15 +429,25 @@ export default function LeadDetailView({ vm }) {
                           <FileText className="h-8 w-8 text-blue-600" />
                           <div>
                             <p className="font-medium">{lead.uploadedFile}</p>
-                            <p className="text-sm text-muted-foreground">Uploaded document</p>
+                            <p className="text-sm text-muted-foreground">
+                              Uploaded document
+                            </p>
                           </div>
                         </div>
                         <div className="flex space-x-2">
-                          <Button variant="outline" size="sm" onClick={handlePreview}>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handlePreview}
+                          >
                             <Eye className="h-4 w-4 mr-2" />
                             Preview
                           </Button>
-                          <Button variant="outline" size="sm" onClick={handleDownload}>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleDownload}
+                          >
                             <Download className="h-4 w-4 mr-2" />
                             Download
                           </Button>
@@ -377,27 +455,52 @@ export default function LeadDetailView({ vm }) {
                       </div>
                       <div className="mt-4">
                         {previewUrl ? (
-                          <img
-                            src={previewUrl}
-                            alt="Lead Preview"
-                            className="w-full max-w-xs rounded border"
-                            onError={(e) => {
-                              e.target.style.display = 'none';
-                            }}
-                          />
+                          previewContentType && previewContentType.startsWith('image/') ? (
+                            <img
+                              src={previewUrl}
+                              alt="Lead Preview"
+                              className="w-full max-w-xs rounded border"
+                              onError={(e) => {
+                                e.target.style.display = 'none';
+                              }}
+                            />
+                          ) : previewContentType === 'application/pdf' ? (
+                            <object
+                              data={previewUrl}
+                              type="application/pdf"
+                              width="100%"
+                              height="600px"
+                            >
+                              <p className="text-sm text-muted-foreground">
+                                PDF preview not available. <a href={previewUrl} target="_blank" rel="noopener noreferrer">Open in new tab</a>
+                              </p>
+                            </object>
+                          ) : (
+                            <div className="text-center">
+                              <p className="text-sm text-muted-foreground mb-2">Preview not available for this file type.</p>
+                              <a
+                                href={previewUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:underline"
+                              >
+                                Open file in new tab
+                              </a>
+                            </div>
+                          )
                         ) : token ? (
                           <div className="text-center py-4 text-muted-foreground">Loading preview...</div>
                         ) : (
-                          <div className="text-center py-4 text-muted-foreground">
-                            Authentication required to preview document
-                          </div>
+                          <div className="text-center py-4 text-muted-foreground">Authentication required to preview document</div>
                         )}
                       </div>
                     </div>
                   ) : (
                     <div className="text-center py-8">
                       <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <p className="text-muted-foreground">No documents uploaded</p>
+                      <p className="text-muted-foreground">
+                        No documents uploaded
+                      </p>
                     </div>
                   )}
                 </TabsContent>
@@ -420,7 +523,9 @@ export default function LeadDetailView({ vm }) {
                         <Edit className="h-4 w-4 text-muted-foreground" />
                         <div>
                           <p className="font-medium">Last Updated</p>
-                          <p className="text-sm text-muted-foreground">{formatDate(lead.updatedAt)}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {formatDate(lead.updatedAt)}
+                          </p>
                         </div>
                       </div>
                     )}
@@ -431,25 +536,33 @@ export default function LeadDetailView({ vm }) {
                         <div>
                           <p className="font-medium">Lead Validated</p>
                           <p className="text-sm text-muted-foreground">
-                            {formatDate(lead.validatedAt)} by{' '}
-                            {formatFullName(lead.validatedByFirstName, lead.validatedByLastName)}
+                            {formatDate(lead.validatedAt)} by{" "}
+                            {formatFullName(
+                              lead.validatedByFirstName,
+                              lead.validatedByLastName,
+                            )}
                           </p>
                         </div>
                       </div>
                     )}
 
-                    {lead.assignedAt && lead.assignedToFirstName && lead.assignedToLastName && (
-                      <div className="flex items-center space-x-3 p-3 bg-muted/40 rounded-lg">
-                        <UserCheck className="h-4 w-4 text-blue-500" />
-                        <div>
-                          <p className="font-medium">Lead Assigned</p>
-                          <p className="text-sm text-muted-foreground">
-                            {formatDate(lead.assignedAt)} to{' '}
-                            {formatFullName(lead.assignedToFirstName, lead.assignedToLastName)}
-                          </p>
+                    {lead.assignedAt &&
+                      lead.assignedToFirstName &&
+                      lead.assignedToLastName && (
+                        <div className="flex items-center space-x-3 p-3 bg-muted/40 rounded-lg">
+                          <UserCheck className="h-4 w-4 text-blue-500" />
+                          <div>
+                            <p className="font-medium">Lead Assigned</p>
+                            <p className="text-sm text-muted-foreground">
+                              {formatDate(lead.assignedAt)} to{" "}
+                              {formatFullName(
+                                lead.assignedToFirstName,
+                                lead.assignedToLastName,
+                              )}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
                   </div>
                 </TabsContent>
               </Tabs>
@@ -464,23 +577,34 @@ export default function LeadDetailView({ vm }) {
             </CardHeader>
             <CardContent className="space-y-3">
               {lead.status === LeadStatus.PENDING &&
-                (user?.roleName === 'SYSTEM_ADMIN' || user?.roleName === 'SALES_MANAGER') && (
-                  <Button className="w-full" onClick={() => setShowValidationModal(true)}>
+                (user?.roleName === "SYSTEM_ADMIN" ||
+                  user?.roleName === "SALES_MANAGER") && (
+                  <Button
+                    className="w-full"
+                    onClick={() => setShowValidationModal(true)}
+                  >
                     <CheckCircle className="h-4 w-4 mr-2" />
                     Validate Lead
                   </Button>
                 )}
 
               {lead.status === LeadStatus.APPROVED && !lead.contactMethod && (
-                <Button className="w-full" onClick={() => setShowContactModal(true)}>
+                <Button
+                  className="w-full"
+                  onClick={() => setShowContactModal(true)}
+                >
                   <PhoneCall className="h-4 w-4 mr-2" />
                   Initiate Contact
                 </Button>
               )}
 
-              {(user?.roleName === 'SYSTEM_ADMIN' || user?.roleName === 'SALES_MANAGER') && (
+              {(user?.roleName === "SYSTEM_ADMIN" ||
+                user?.roleName === "SALES_MANAGER") && (
                 <div className="space-y-2">
-                  <Select value={selectedAgentId} onValueChange={setSelectedAgentId}>
+                  <Select
+                    value={selectedAgentId}
+                    onValueChange={setSelectedAgentId}
+                  >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Assign to sales agent" />
                     </SelectTrigger>
@@ -492,51 +616,54 @@ export default function LeadDetailView({ vm }) {
                       ))}
                     </SelectContent>
                   </Select>
-                  <Button className="w-full" onClick={handleAssignLead} disabled={!selectedAgentId || assigning}>
-                    {assigning ? 'Assigning...' : 'Assign Lead'}
+                  <Button
+                    className="w-full"
+                    onClick={handleAssignLead}
+                    disabled={!selectedAgentId || assigning}
+                  >
+                    {assigning ? "Assigning..." : "Assign Lead"}
                   </Button>
                 </div>
               )}
 
-              {lead.status === LeadStatus.CONTACTED && canConvertLeadToVendor && (
-                <Button className="w-full" onClick={() => setShowConversionModal(true)}>
-                  <Building2 className="h-4 w-4 mr-2" />
-                  Convert to Vendor
-                </Button>
-              )}
+              {lead.status === LeadStatus.CONTACTED &&
+                canConvertLeadToDealer && (
+                  <Button
+                    className="w-full"
+                    onClick={() => setShowConversionModal(true)}
+                  >
+                    <Building2 className="h-4 w-4 mr-2" />
+                    Convert to Dealer
+                  </Button>
+                )}
 
-              <Button variant="outline" className="w-full">
-                <MessageCircle className="h-4 w-4 mr-2" />
-                Add Note
-              </Button>
+          
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Status Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Current Status:</span>
-                <Badge style={getStatusColor(lead.status)}>{getStatusLabel(lead.status)}</Badge>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Lead Source:</span>
-                <span className="text-sm">{lead.source}</span>
-              </div>
-
-              {lead.vendorId && (
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Vendor ID:</span>
-                  <span className="text-sm">{lead.vendorUniqueId}</span>
-                </div>
-              )}
-            </CardContent>
-          </Card>
         </div>
       </div>
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the lead
+              <span className="font-semibold text-foreground"> "{lead?.businessName}" </span> 
+              and remove their data from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDelete}
+              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+            >
+              Delete Lead
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {showContactModal && (
         <LeadContactModal

@@ -1,23 +1,39 @@
 import { useState, useEffect } from 'react';
-import { vendorsService } from '../services/vendorsApiService';
+import { dealersService } from '../services/dealersApiService';
 import { subscriptionsService } from '@/features/subscriptions/services/subscriptionsApiService';
 import { subscriptionPlansService } from '@/features/subscriptions/services/subscriptionPlansApiService';
 
-export function useVendorsList() {
-  const [vendors, setVendors] = useState([]);
+export function useDealersList() {
+  const [dealers, setDealers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true); // 💡 حالة التحميل الأولية للموقع
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(''); // 💡 قيمة البحث بعد التأخير
   const [statusFilter, setStatusFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [pageSize] = useState(10);
   const [subscriptionPlans, setSubscriptionPlans] = useState([]);
 
+  // 💡 تأثير الـ Debounce: انتظر 400 ملي ثانية بعد توقف المستخدم عن الكتابة لتحديث القيمة
   useEffect(() => {
-    loadVendors();
+    const handler = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+      setCurrentPage(0); // إعادة الترقيم للصفحة الأولى عند تغير نص البحث
+    }, 400);
+
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
+
+  // 💡 جلب البيانات عند تغير الصفحة، الفلتر، أو القيمة المفلترة للبحث
+  useEffect(() => {
+    loadDealers();
+  }, [currentPage, statusFilter, debouncedSearchQuery]);
+
+  useEffect(() => {
     loadSubscriptionPlans();
-  }, [currentPage, statusFilter]);
+  }, []);
 
   const loadSubscriptionPlans = async () => {
     try {
@@ -29,7 +45,7 @@ export function useVendorsList() {
     }
   };
 
-  const loadVendors = async () => {
+  const loadDealers = async () => {
     try {
       setLoading(true);
       setError(null);
@@ -37,23 +53,22 @@ export function useVendorsList() {
         page: currentPage,
         size: pageSize,
         status: statusFilter === 'all' ? undefined : statusFilter || undefined,
-        search: searchQuery || undefined,
       };
 
-      const response = await vendorsService.getVendors(params);
-      setVendors(response.content || []);
+      // 💡 نستخدم الآن المتغير الـ Debounced بدلاً من القيمة الفورية
+      const response = debouncedSearchQuery
+        ? await dealersService.searchDealers(debouncedSearchQuery, params)
+        : await dealersService.getDealers(params);
+        
+      setDealers(response.content || []);
       setTotalPages(response.totalPages || 0);
     } catch (err) {
-      console.error('Error loading vendors:', err);
+      console.error('Error loading dealers:', err);
       setError(err);
     } finally {
       setLoading(false);
+      setIsInitialLoading(false); // 💡 تنتهي بمجرد اكتمال أول طلب بنجاح للواجهة
     }
-  };
-
-  const handleSearch = () => {
-    setCurrentPage(0);
-    loadVendors();
   };
 
   const handleStatusFilterChange = (value) => {
@@ -64,7 +79,7 @@ export function useVendorsList() {
   const handleEditSubscription = async (id, data) => {
     try {
       await subscriptionsService.updateSubscription(id, data);
-      await loadVendors();
+      await loadDealers();
     } catch (err) {
       setError(err.message);
       throw err;
@@ -72,8 +87,9 @@ export function useVendorsList() {
   };
 
   return {
-    vendors,
+    dealers,
     loading,
+    isInitialLoading, // 💡 تمرير الحالة الجديدة للواجهة
     error,
     searchQuery,
     setSearchQuery,
@@ -82,8 +98,7 @@ export function useVendorsList() {
     setCurrentPage,
     totalPages,
     pageSize,
-    loadVendors,
-    handleSearch,
+    loadDealers,
     handleStatusFilterChange,
     handleEditSubscription,
     subscriptionPlans,
