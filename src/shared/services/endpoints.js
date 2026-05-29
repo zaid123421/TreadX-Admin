@@ -73,4 +73,9 @@ export const API_ENDPOINTS = {
 
   /** Global permissions catalog (GET) — optional extras on user create */
   PERMISSIONS: '/permissions',
+
+  /** WMS warehouse provisioning (System Administrator only) */
+  WMS_WAREHOUSES: '/wms/warehouses',
+  WMS_WAREHOUSE_BY_ID: (id) => `/wms/warehouses/${id}`,
+  WMS_WAREHOUSE_STATUS: (id) => `/wms/warehouses/${id}/status`,
 };
