@@ -109,3 +109,8 @@ export function canCreateUser(user) {
 export function isSalesManagerLimitedToAgentCreation(user) {
   return user?.roleName === ROLE.SALES_MANAGER;
 }
+
+/** WMS-01: Provision warehouse — System Administrator only */
+export function canProvisionWarehouse(user) {
+  return user?.roleName === ROLE.SYSTEM_ADMIN;
+}

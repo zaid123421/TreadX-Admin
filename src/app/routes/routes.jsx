@@ -7,7 +7,8 @@ import {
   BarChart3,
   Settings,
   CheckCircle,
-  FileText
+  FileText,
+  Warehouse,
 } from 'lucide-react';
 
 import Dashboard from '../../features/dashboard';
@@ -27,6 +28,7 @@ import {
   RolesManagement,
   ChangePassword,
 } from '../../features/access-control';
+import { WarehousesList, ProvisionWarehouse } from '../../features/warehouses';
 import { LoginForm } from '../../features/auth';
 
 export const publicRoutes = [
@@ -145,6 +147,19 @@ export const protectedRoutes = [
     icon: Settings,
     roles: ['SYSTEM_ADMIN', 'SALES_MANAGER', 'SALES_AGENT'],
     showInSidebar: true,
+  },
+  {
+    path: 'warehouses',
+    element: WarehousesList,
+    labelKey: 'warehouses',
+    icon: Warehouse,
+    roles: ['SYSTEM_ADMIN'],
+    showInSidebar: true,
+  },
+  {
+    path: 'warehouses/provision',
+    element: ProvisionWarehouse,
+    roles: ['SYSTEM_ADMIN'],
   },
   {
     path: 'inventory',
