@@ -1,10 +1,10 @@
 
 # features - conversion-requests
-mkdir src/features/conversion-requests/components
-mkdir src/features/conversion-requests/pages
-mkdir src/features/conversion-requests/services
-mkdir src/features/conversion-requests/hooks
-mkdir src/features/conversion-requests/types
-mkdir src/features/conversion-requests/utils
-New-Item src/features/conversion-requests/index.js -ItemType File
+mkdir src/features/warehouses/components
+mkdir src/features/warehouses/pages
+mkdir src/features/warehouses/services
+mkdir src/features/warehouses/hooks
+mkdir src/features/warehouses/types
+mkdir src/features/warehouses/utils
+New-Item src/features/warehouses/index.js -ItemType File
 

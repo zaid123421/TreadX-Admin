@@ -1,6 +1,9 @@
 /** Client-side API configuration (Vite env). */
+const PRODUCTION_API_BASE_URL = 'https://api.treadx.uqarsoft.com/api/v1';
+
 export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || 'http://localhost:9003';
+  import.meta.env.VITE_API_BASE_URL ||
+  (import.meta.env.PROD ? PRODUCTION_API_BASE_URL : 'http://localhost:9003');
 
 /** When true, logs extra request info in dev (set VITE_ENABLE_API_DEBUG=true). */
 export const ENABLE_API_DEBUG =
