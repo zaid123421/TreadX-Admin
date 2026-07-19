@@ -24,7 +24,7 @@ const crm = {
   muted: "text-muted-foreground",
   card: "bg-card border border-border",
   input:
-    "h-10 rounded-md border-input bg-background text-foreground placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-primary/25",
+    "h-10 rounded-md border-input bg-background text-foreground placeholder:text-placeholder focus-visible:border-primary focus-visible:ring-primary/25",
   label: "text-muted-foreground text-sm font-normal",
   req: "text-destructive",
   goldBtn:
@@ -48,11 +48,10 @@ function RequiredLabel({ htmlFor, children }) {
  */
 function selectedLabel(list, id) {
   if (id == null || id === "") return undefined;
-  // تحويل الطرفين إلى نصوص للمقارنة الآمنة الرقمية والنصية
-  const row = list.find((x) => String(x.id) === String(id));
+  const row = (list ?? []).find((x) => String(x.id) === String(id));
   const name = row?.name ?? row?.label;
   if (name != null && String(name).trim() !== "") return String(name);
-  return undefined; // إرجاع undefined يترك الـ placeholder الافتراضي يعمل بسلاسة
+  return String(id);
 }
 
 export function LeadWizardForm({
@@ -60,6 +59,7 @@ export function LeadWizardForm({
   selectedFile,
   errors,
   isSubmitting,
+  isResolvingAddress = false,
   countries,
   provinces,
   cities,
@@ -226,7 +226,7 @@ export function LeadWizardForm({
                       : undefined
                   }
                   onValueChange={handleCountryChange}
-                  disabled={loadingCountries}
+                  disabled={loadingCountries || isResolvingAddress}
                 >
                   <SelectTrigger
                     id="country"
@@ -271,7 +271,7 @@ export function LeadWizardForm({
                       : undefined
                   }
                   onValueChange={handleStateChange}
-                  disabled={!formData.countryId || loadingProvinces}
+                  disabled={!formData.countryId || loadingProvinces || isResolvingAddress}
                 >
                   <SelectTrigger
                     id="state"
@@ -323,7 +323,7 @@ export function LeadWizardForm({
                       : undefined
                   }
                   onValueChange={handleCityChange}
-                  disabled={!formData.stateId || loadingCities}
+                  disabled={!formData.stateId || loadingCities || isResolvingAddress}
                 >
                   <SelectTrigger
                     id="city"

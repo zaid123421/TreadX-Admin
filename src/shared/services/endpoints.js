@@ -3,6 +3,7 @@ export const API_ENDPOINTS = {
   LOGOUT: '/auth/logout',
   REFRESH: '/auth/refresh',
   CHANGE_PASSWORD: '/auth/change-password',
+  FORGOT_PASSWORD: '/auth/forgot-password',
   CURRENT_USER: '/users/me',
 
   LEADS: '/leads',
@@ -15,6 +16,7 @@ export const API_ENDPOINTS = {
   MY_LEADS: '/leads/my-leads',
   LEAD_TAKE: (id) => `/leads/${id}/take`,
   LEAD_ASSIGN: (id) => `/leads/${id}/assign`,
+  LEADS_HISTORY_BY_LEAD: (leadId) => `/leads-history/lead/${leadId}`,
 
   DEALERS: '/dealers',
   ENHANCED_DEALERS_CREATE: '/enhanced-dealers/create',

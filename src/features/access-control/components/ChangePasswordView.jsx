@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui/card';
 import { Input } from '@/shared/ui/input';
 import { Button } from '@/shared/ui/button';
-import { Lock, ShieldCheck, KeyRound, CheckCircle2, XCircle, Eye, EyeOff } from 'lucide-react';
+import { Lock, ShieldCheck, KeyRound, CheckCircle2, XCircle, Eye, EyeOff, Loader2 } from 'lucide-react';
 
 export function ChangePasswordView({
   currentPassword,
@@ -13,6 +13,7 @@ export function ChangePasswordView({
   setConfirmPassword,
   message,
   error,
+  loading,
   onSubmit,
 }) {
   // حالات داخلية للتحكم في ظهور وإغلاق الـ Alert
@@ -114,11 +115,19 @@ export function ChangePasswordView({
           </div>
 
           {/* زر التحديث */}
-          <Button 
-            onClick={onSubmit} 
+          <Button
+            onClick={onSubmit}
+            disabled={loading}
             className="w-full h-11 mt-2 font-semibold shadow-xs transition-all tracking-wide"
           >
-            Update Password
+            {loading ? (
+              <>
+                <Loader2 className="me-2 h-4 w-4 animate-spin" />
+                Updating...
+              </>
+            ) : (
+              'Update Password'
+            )}
           </Button>
         </CardContent>
       </Card>

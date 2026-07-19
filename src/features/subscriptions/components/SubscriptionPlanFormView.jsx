@@ -100,7 +100,7 @@ export function SubscriptionPlanFormView({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="description">Description *</Label>
+        <Label htmlFor="description">Description</Label>
         <Textarea
           id="description"
           {...register('description')}
@@ -111,7 +111,7 @@ export function SubscriptionPlanFormView({
       </div>
 
       <div className="space-y-4">
-        <Label>Features *</Label>
+        <Label>Features</Label>
 
         <div className="flex gap-2">
           <Input

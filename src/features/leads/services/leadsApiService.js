@@ -73,6 +73,16 @@ export const leadsService = {
     }
   },
 
+  getLeadHistory: async (leadId) => {
+    try {
+      const response = await apiClient.get(API_ENDPOINTS.LEADS_HISTORY_BY_LEAD(leadId));
+      const data = extractResponseData(response);
+      return Array.isArray(data) ? data : data?.content || data?.data || [];
+    } catch (error) {
+      throw new Error(handleApiError(error, 'Failed to fetch lead history'));
+    }
+  },
+
   createLead: async (leadData, file = null) => {
     try {
       const payload = buildLeadRequestPayload(leadData);

@@ -371,7 +371,42 @@ export const getStatusColor = (status) => {
 };
 
 export const getStatusLabel = (status) => {
-  return status.replace('_', ' ').toLowerCase().replace(/\b\w/g, (l) => l.toUpperCase());
+  if (!status) return '';
+  return String(status)
+    .replace(/_/g, ' ')
+    .toLowerCase()
+    .replace(/\b\w/g, (l) => l.toUpperCase());
+};
+
+/** Format ISO string or backend date array for history timeline */
+export const formatHistoryDate = (value) => {
+  if (!value) return 'N/A';
+  if (Array.isArray(value)) return formatLeadDateDetail(value);
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return 'N/A';
+  return d.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
+
+export const getHistoryTimestamp = (item) => {
+  const value = item?.createdAt || item?.assignedAt || item?.validatedAt || item?.updatedAt;
+  if (!value) return 0;
+  if (Array.isArray(value)) {
+    const d = parseBackendDate(value);
+    return d ? d.getTime() : 0;
+  }
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? 0 : d.getTime();
+};
+
+export const formatActionTypeLabel = (actionType) => {
+  if (!actionType) return 'Activity';
+  return getStatusLabel(actionType);
 };
 
 export const getContactMethodLabel = (method) => {

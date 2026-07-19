@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './app/providers/AuthContext';
 import { ProtectedRoute } from './features/auth';
-import AppLayout from './app/layout/AppLayout';
+import MainLayout from './app/layout/MainLayout';
 import ErrorBoundary from './app/components/ErrorBoundary';
 import { publicRoutes, protectedRoutes } from './app/routes/routes';
 
@@ -16,7 +16,7 @@ function App() {
               <Route key={route.path} path={route.path} element={<route.element />} />
             ))}
             <Route path="/dashboard" element={<Navigate to="/" replace />} />
-            <Route path="/" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+            <Route path="/" element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
               {protectedRoutes
                 .filter((r) => r.element)
                 .map((route) =>
