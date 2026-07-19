@@ -71,9 +71,13 @@ export function canAssignLead(user) {
   return user?.roleName === ROLE.SYSTEM_ADMIN || user?.roleName === ROLE.SALES_MANAGER;
 }
 
-/** DLR-01 / DLR-02: Dealer creation from lead — not Sales Agent */
+/** DLR-01 / DLR-02: Dealer creation from lead — Admin, Manager, and Sales Agent */
 export function canConvertLeadToDealer(user) {
-  return user?.roleName === ROLE.SYSTEM_ADMIN || user?.roleName === ROLE.SALES_MANAGER;
+  return (
+    user?.roleName === ROLE.SYSTEM_ADMIN ||
+    user?.roleName === ROLE.SALES_MANAGER ||
+    user?.roleName === ROLE.SALES_AGENT
+  );
 }
 
 /** SUB-P01: Plan create/update/delete — System Administrator only */
@@ -81,13 +85,14 @@ export function canManageSubscriptionPlans(user) {
   return user?.roleName === ROLE.SYSTEM_ADMIN;
 }
 
-/** SUB-P01 view + SUB-P02 / SUB-P03 listing — Admin + Sales Manager (+ agents for active plans API elsewhere) */
+/** SUB-P01 view + SUB-P02 / SUB-P03 listing — Admin + Sales Manager */
 export function canViewSubscriptionPlansPage(user) {
-  return (
-    user?.roleName === ROLE.SYSTEM_ADMIN ||
-    user?.roleName === ROLE.SALES_MANAGER ||
-    user?.roleName === ROLE.SALES_AGENT
-  );
+  return user?.roleName === ROLE.SYSTEM_ADMIN || user?.roleName === ROLE.SALES_MANAGER;
+}
+
+/** Create/renew dealer subscription — Admin + Sales Manager (not Sales Agent) */
+export function canCreateDealerSubscription(user) {
+  return user?.roleName === ROLE.SYSTEM_ADMIN || user?.roleName === ROLE.SALES_MANAGER;
 }
 
 /** AC-03: User management page — admin + manager (manager limited in UI) */

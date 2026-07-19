@@ -20,6 +20,17 @@ export const splitContactFromNotes = (lead) => {
 
 const str = (v) => (v == null || v === '' ? '' : String(v));
 
+/** Display names for address resolution (GET lead returns names, not IDs). */
+export const getLeadAddressNames = (lead) => {
+  if (!lead) return {};
+  const addr = lead.address || {};
+  return {
+    country: lead.country ?? addr.country,
+    province: lead.province ?? addr.province,
+    city: lead.city ?? addr.city,
+  };
+};
+
 export const normalizeLeadToForm = (lead) => {
   if (!lead) return { ...defaultLeadRequest };
   const addr = lead.address || {};

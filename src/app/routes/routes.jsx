@@ -27,19 +27,22 @@ import {
   UsersManagement,
   RolesManagement,
   ChangePassword,
+  ForgotPassword,
 } from '../../features/access-control';
 import { WarehousesList, ProvisionWarehouse } from '../../features/warehouses';
 import { LoginForm } from '../../features/auth';
 
 export const publicRoutes = [
   { path: '/login', element: LoginForm },
+  { path: '/forgot-password', element: ForgotPassword },
 ];
 
 /**
- * Protected routes rendered inside AppLayout.
+ * Protected routes rendered inside MainLayout.
  * - `showInSidebar`: whether the route appears in the sidebar navigation.
  * - `label` / `icon` / `roles`: used by the Sidebar to render and filter nav items.
  * - Routes without `showInSidebar` (detail / edit pages) are still accessible but hidden from the nav.
+ * - Theme, language, and change-password live under the Sidebar Settings accordion.
  */
 export const protectedRoutes = [
   {
@@ -112,7 +115,7 @@ export const protectedRoutes = [
     element: SubscriptionPlans,
     labelKey: 'subscriptionPlans',
     icon: CreditCard,
-    roles: ['SYSTEM_ADMIN', 'SALES_MANAGER', 'SALES_AGENT'],
+    roles: ['SYSTEM_ADMIN', 'SALES_MANAGER'],
     showInSidebar: true,
   },
   {
@@ -146,7 +149,7 @@ export const protectedRoutes = [
     labelKey: 'changePassword',
     icon: Settings,
     roles: ['SYSTEM_ADMIN', 'SALES_MANAGER', 'SALES_AGENT'],
-    showInSidebar: true,
+    showInSidebar: false,
   },
   {
     path: 'warehouses',
@@ -174,14 +177,6 @@ export const protectedRoutes = [
     labelKey: 'reports',
     icon: BarChart3,
     roles: ['SYSTEM_ADMIN',],
-    showInSidebar: true,
-    placeholder: true,
-  },
-  {
-    path: 'settings',
-    labelKey: 'settings',
-    icon: Settings,
-    roles: ['SYSTEM_ADMIN'],
     showInSidebar: true,
     placeholder: true,
   },

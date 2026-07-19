@@ -38,6 +38,7 @@
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-placeholder: var(--placeholder);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
@@ -77,6 +78,8 @@
   --secondary-foreground: var(--color-secondary-on-surface);
   --muted: var(--color-primary-container);
   --muted-foreground: var(--color-warning-on-container);
+  /* Lighter than typed input text in light mode */
+  --placeholder: color-mix(in srgb, var(--color-secondary-main) 45%, transparent);
   --accent: var(--color-tertiary-container);
   --accent-foreground: var(--color-tertiary-on-container);
   --destructive: var(--color-error-main);
@@ -102,6 +105,10 @@
   --sidebar-accent-foreground: var(--color-primary-on-container);
   --sidebar-border: color-mix(in srgb, var(--color-secondary-main) 16%, transparent);
   --sidebar-ring: color-mix(in srgb, var(--color-primary-main-light) 50%, transparent);
+
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: color-mix(in srgb, var(--color-secondary-main) 28%, transparent);
+  --scrollbar-thumb-hover: color-mix(in srgb, var(--color-secondary-main) 45%, transparent);
 }
 
 .dark {
@@ -118,6 +125,8 @@
   --secondary-foreground: var(--color-secondary-on-surface);
   --muted: var(--color-surface-container-high);
   --muted-foreground: var(--color-secondary-on-surface);
+  /* Lighter than typed input text in dark mode */
+  --placeholder: color-mix(in srgb, var(--color-secondary-on-surface) 40%, transparent);
   --accent: var(--color-surface-container-high);
   --accent-foreground: var(--color-secondary-on-surface);
   --destructive: var(--color-error-main);
@@ -143,6 +152,10 @@
   --sidebar-accent-foreground: var(--color-secondary-on-surface);
   --sidebar-border: color-mix(in srgb, var(--color-secondary-on-surface) 16%, transparent);
   --sidebar-ring: color-mix(in srgb, var(--color-primary-main-dark) 55%, transparent);
+
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: color-mix(in srgb, var(--color-secondary-on-surface) 28%, transparent);
+  --scrollbar-thumb-hover: color-mix(in srgb, var(--color-secondary-on-surface) 45%, transparent);
 }
 
 html {
@@ -165,5 +178,47 @@ html[lang="ar"] {
     transition:
       background-color var(--duration-normal) var(--easing-standard),
       color var(--duration-normal) var(--easing-standard);
+  }
+
+  /* Typed value stays at full foreground; placeholders stay lighter in both themes */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+  textarea {
+    color: var(--foreground);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--placeholder);
+    opacity: 1;
+  }
+
+  /* Theme-aware scrollbars (Firefox + Chromium/WebKit) */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  }
+
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scrollbar-thumb-hover);
+  }
+
+  *::-webkit-scrollbar-corner {
+    background: transparent;
   }
 }

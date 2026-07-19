@@ -388,7 +388,6 @@ export function LeadsListView({
                 <SelectItem value="createdAt-asc">Oldest First</SelectItem>
                 <SelectItem value="businessName-asc">Business A-Z</SelectItem>
                 <SelectItem value="businessName-desc">Business Z-A</SelectItem>
-                <SelectItem value="updatedAt-desc">Recently Updated</SelectItem>
               </SelectContent>
             </Select>
           </div>

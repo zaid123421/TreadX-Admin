@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { Eye, EyeOff, Loader2, Mail, Lock, Shield, KeyRound } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui/button';
@@ -140,14 +140,13 @@ export function LoginFormView({
                 </Button>
               </div>
               <div className="w-full text-right">
-  <button 
-    type="button"
-    className="text-xs font-medium text-primary hover:underline"
-    onClick={(e) => e.preventDefault()}
-  >
-    {t('auth:forgotPassword')}
-  </button>
-</div>
+                <Link
+                  to="/forgot-password"
+                  className="text-xs font-medium text-primary hover:underline"
+                >
+                  {t('auth:forgotPassword')}
+                </Link>
+              </div>
             </div>
             
 

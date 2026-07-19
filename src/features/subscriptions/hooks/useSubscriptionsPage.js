@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { subscriptionsService } from '../services/subscriptionsApiService';
 import { subscriptionPlansService } from '../services/subscriptionPlansApiService';
 
 export function useSubscriptionsPage() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [error, setError] = useState('');
   const [subscriptionId, setSubscriptionId] = useState('');
   const [subscriptionPlans, setSubscriptionPlans] = useState([]);
@@ -21,9 +23,12 @@ export function useSubscriptionsPage() {
       setItems(data.content || []);
       setError('');
     } catch (err) {
-      setError(err.message);
+      const message = err.message || 'Failed to load subscriptions';
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
+      setIsInitialLoading(false);
     }
   };
 
@@ -49,27 +54,35 @@ export function useSubscriptionsPage() {
     if (!id) return;
     try {
       await subscriptionsService.cancelSubscription(id, reason);
+      toast.success('Subscription cancelled successfully');
       await loadSubscriptions();
     } catch (err) {
-      setError(err.message);
+      const message = err.message || 'Failed to cancel subscription';
+      setError(message);
+      toast.error(message);
     }
   };
 
   const handleDelete = async (id) => {
     try {
       await subscriptionsService.deleteSubscription(id);
+      toast.success('Subscription deleted successfully');
       await loadSubscriptions();
     } catch (err) {
-      setError(err.message);
+      const message = err.message || 'Failed to delete subscription';
+      setError(message);
+      toast.error(message);
     }
   };
 
   const handleEdit = async (id, data) => {
     try {
       await subscriptionsService.updateSubscription(id, data);
+      toast.success('Subscription updated successfully');
       await loadSubscriptions();
     } catch (err) {
-      setError(err.message);
+      const message = err.message || 'Failed to update subscription';
+      toast.error(message);
       throw err;
     }
   };
@@ -77,6 +90,7 @@ export function useSubscriptionsPage() {
   return {
     items,
     loading,
+    isInitialLoading,
     error,
     subscriptionId,
     setSubscriptionId,

@@ -181,3 +181,33 @@ export async function fetchCitiesByProvince(stateId) {
   if (lastError) throw lastError;
   return [];
 }
+
+function matchByName(list, name) {
+  if (!name || !Array.isArray(list)) return null;
+  const target = String(name).trim().toLowerCase();
+  const row = list.find((item) => String(item.name ?? '').trim().toLowerCase() === target);
+  return row?.id ?? null;
+}
+
+/**
+ * Resolve country/state/city IDs from display names (GET often returns names, not IDs).
+ * Expects `{ country, province, city }` name fields.
+ */
+export async function resolveAddressIdsFromNames(address = {}) {
+  const countries = await fetchCountries();
+  const countryId = matchByName(countries, address.country);
+  if (countryId == null) {
+    return { countryId: null, stateId: null, cityId: null };
+  }
+
+  const provinces = await fetchProvincesByCountry(countryId);
+  const stateId = matchByName(provinces, address.province);
+  if (stateId == null) {
+    return { countryId, stateId: null, cityId: null };
+  }
+
+  const cities = await fetchCitiesByProvince(stateId);
+  const cityId = matchByName(cities, address.city);
+
+  return { countryId, stateId, cityId };
+}

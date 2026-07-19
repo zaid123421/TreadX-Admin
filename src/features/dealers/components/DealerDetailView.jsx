@@ -8,13 +8,16 @@ import { displayDealerId, DEALER_STATUS_BADGE_STYLES } from '../utils/dealerUtil
 import ErrorPage from '@/app/components/ErrorPage';
 import { UserRole } from '@/shared/types/api';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/ui/dialog';
+import { Switch } from '@/shared/ui/switch';
 import { subscriptionPlansService } from '@/features/subscriptions/services/subscriptionPlansApiService';
 import { subscriptionsService } from '@/features/subscriptions/services/subscriptionsApiService';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { canCreateDealerSubscription } from '@/shared/access/roleMatrix';
 
 export default function DealerDetailView({ vm }) {
   const { user, navigate, dealer, loading, error, loadDealer, handleDelete, activeSubscription } = vm;
+  const canCreateSubscription = canCreateDealerSubscription(user);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [plans, setPlans] = useState([]);
   const [plansLoading, setPlansLoading] = useState(false);
@@ -25,6 +28,11 @@ export default function DealerDetailView({ vm }) {
   const [creating, setCreating] = useState(false);
   const [startDateInput, setStartDateInput] = useState('');
   const [endDateInput, setEndDateInput] = useState('');
+  const [totalUsers, setTotalUsers] = useState(1);
+  const [userRoles, setUserRoles] = useState({
+    DEALER_ADMIN: 1,
+    DEALER_TECHNICIAN: 0,
+  });
 
   useEffect(() => {
     const loadPlans = async () => {
@@ -245,6 +253,7 @@ export default function DealerDetailView({ vm }) {
                 <CreditCard className="h-10 w-10 text-muted-foreground/60 mb-2 stroke-1" />
                 <p className="font-medium text-sm mb-4">No Active Subscription found for this Dealer</p>
 
+                {canCreateSubscription && (
                 <Dialog open={isCreateOpen} onOpenChange={(open) => setIsCreateOpen(open)}>
                   <div>
                     <Button className="mb-4" onClick={() => setIsCreateOpen(true)}>Create Subscription</Button>
@@ -306,13 +315,66 @@ export default function DealerDetailView({ vm }) {
                           />
                         </div>
 
+                        <div>
+                          <label className="block text-sm font-medium text-muted-foreground mb-2">Total Users</label>
+                          <input
+                            type="number"
+                            min="1"
+                            className="w-full p-2 rounded border bg-card"
+                            value={totalUsers}
+                            onChange={(e) => setTotalUsers(parseInt(e.target.value) || 1)}
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="block text-sm font-medium text-muted-foreground">Team Roles</label>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-xs text-muted-foreground mb-1">Dealer Admins</label>
+                              <input
+                                type="number"
+                                min="0"
+                                className="w-full p-2 rounded border bg-card"
+                                value={userRoles.DEALER_ADMIN}
+                                onChange={(e) =>
+                                  setUserRoles((prev) => ({
+                                    ...prev,
+                                    DEALER_ADMIN: parseInt(e.target.value) || 0,
+                                  }))
+                                }
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs text-muted-foreground mb-1">Dealer Technicians</label>
+                              <input
+                                type="number"
+                                min="0"
+                                className="w-full p-2 rounded border bg-card"
+                                value={userRoles.DEALER_TECHNICIAN}
+                                onChange={(e) =>
+                                  setUserRoles((prev) => ({
+                                    ...prev,
+                                    DEALER_TECHNICIAN: parseInt(e.target.value) || 0,
+                                  }))
+                                }
+                              />
+                            </div>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            Total team members: {userRoles.DEALER_ADMIN + userRoles.DEALER_TECHNICIAN} / {totalUsers} users
+                          </p>
+                        </div>
+
                         <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-muted-foreground mb-2">Auto Renew</label>
-                            <select className="w-full p-2 rounded border bg-card" value={autoRenew ? 'true' : 'false'} onChange={(e) => setAutoRenew(e.target.value === 'true')}>
-                              <option value="true">Enabled</option>
-                              <option value="false">Disabled</option>
-                            </select>
+                          <div className="flex items-center gap-3 pt-7">
+                            <Switch
+                              id="autoRenew"
+                              checked={autoRenew}
+                              onCheckedChange={setAutoRenew}
+                            />
+                            <label htmlFor="autoRenew" className="text-sm font-medium text-muted-foreground cursor-pointer">
+                              Auto Renew
+                            </label>
                           </div>
 
                           <div>
@@ -343,6 +405,13 @@ export default function DealerDetailView({ vm }) {
                               if (s > e) return toast.error('Start date must be before end date');
                             }
 
+                            const totalRoles = userRoles.DEALER_ADMIN + userRoles.DEALER_TECHNICIAN;
+                            if (totalRoles > totalUsers) {
+                              return toast.error(
+                                `Total team members (${totalRoles}) cannot exceed total users (${totalUsers})`
+                              );
+                            }
+
                             setCreating(true);
                             try {
                               const payload = {
@@ -351,6 +420,8 @@ export default function DealerDetailView({ vm }) {
                                 amountPaid: Number(amountPaid) || 0,
                                 autoRenew,
                                 billingWeekday,
+                                totalUsers,
+                                userRoles,
                                 startDate: startDateInput ? new Date(startDateInput).toISOString() : undefined,
                                 endDate: endDateInput ? new Date(endDateInput).toISOString() : undefined,
                               };
@@ -372,6 +443,7 @@ export default function DealerDetailView({ vm }) {
                     </DialogContent>
                   </div>
                 </Dialog>
+                )}
               </Card>
             )}
 

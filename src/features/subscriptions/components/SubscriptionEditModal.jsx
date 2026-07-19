@@ -19,8 +19,9 @@ export default function SubscriptionEditModal({ subscription, subscriptionPlans,
     billingWeekday: subscription?.billingWeekday || 'MONDAY',
   });
   const [error, setError] = React.useState('');
+  const [saving, setSaving] = React.useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!formData.planId) {
       setError('Plan is required');
       return;
@@ -34,15 +35,23 @@ export default function SubscriptionEditModal({ subscription, subscriptionPlans,
       return;
     }
 
-    onSave({
-      dealerId: formData.dealerId,
-      planId: formData.planId,
-      startDate: new Date(formData.startDate).toISOString(),
-      endDate: new Date(formData.endDate).toISOString(),
-      amountPaid: formData.amountPaid,
-      autoRenew: formData.autoRenew,
-      billingWeekday: formData.billingWeekday,
-    });
+    setError('');
+    setSaving(true);
+    try {
+      await onSave({
+        dealerId: formData.dealerId,
+        planId: formData.planId,
+        startDate: new Date(formData.startDate).toISOString(),
+        endDate: new Date(formData.endDate).toISOString(),
+        amountPaid: formData.amountPaid,
+        autoRenew: formData.autoRenew,
+        billingWeekday: formData.billingWeekday,
+      });
+    } catch (err) {
+      setError(err?.message || 'Failed to update subscription');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -159,8 +168,8 @@ export default function SubscriptionEditModal({ subscription, subscriptionPlans,
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button onClick={handleSubmit} disabled={isSubmitting}>
-              {isSubmitting ? 'Saving...' : 'Save Changes'}
+            <Button onClick={handleSubmit} disabled={isSubmitting || saving}>
+              {isSubmitting || saving ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
         </div>

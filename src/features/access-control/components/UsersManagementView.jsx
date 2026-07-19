@@ -1,11 +1,8 @@
-import React from "react";
-import { Plus, Users, Mail, User, Lock, Briefcase, Trash2, Filter, ShieldAlert, BadgeCheck } from "lucide-react";
+import React, { useState } from "react";
+import { Plus, Users, Mail, User, Lock, Briefcase, Trash2, Filter, BadgeCheck, Pencil } from "lucide-react";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
@@ -13,7 +10,7 @@ import { Label } from "@/shared/ui/label";
 import { Badge } from "@/shared/ui/badge";
 import { Switch } from "@/shared/ui/switch";
 import { Checkbox } from "@/shared/ui/checkbox";
-import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
+import { Alert, AlertDescription } from "@/shared/ui/alert";
 import {
   Select,
   SelectContent,
@@ -29,6 +26,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/shared/ui/alert-dialog";
 import {
   Table,
   TableBody,
@@ -71,16 +78,6 @@ function getAvatarLetters(firstName, lastName) {
   return f || l ? `${f}${l}` : "U";
 }
 
-// const ROLE_COLOR_STYLES = {
-//   SYSTEM_ADMIN: "bg-red-500/10 text-red-400 border-red-500/20",
-//   DEALER_ADMIN: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-//   DEALER_TECHNICIAN: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
-//   WAREHOUSE_MANAGER: "bg-blue-600/15 text-blue-400 border-blue-500/30",
-//   WAREHOUSE_STAFF: "bg-sky-500/10 text-sky-400 border-sky-500/20",
-//   SALES_MANAGER: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
-//   SALES_AGENT: "bg-violet-500/10 text-violet-400 border-violet-500/20",
-//   DEFAULT: "bg-muted text-muted-foreground border-muted-foreground/10"
-// };
 const ROLE_COLOR_STYLES = {
   SYSTEM_ADMIN: "bg-red-500/5 text-red-400 border-red-500/20 hover:border-red-500/40",
   DEALER_ADMIN: "bg-orange-500/5 text-orange-400 border-orange-500/20 hover:border-orange-500/40",
@@ -91,6 +88,82 @@ const ROLE_COLOR_STYLES = {
   SALES_AGENT: "bg-purple-500/5 text-purple-400 border-purple-500/20 hover:border-purple-500/40",
   DEFAULT: "bg-muted/10 text-foreground/90 border-border hover:border-primary/30"
 };
+
+function RoleSelectField({ form, setForm, fieldErrors, rolesForSelect, managerAgentOnly }) {
+  if (managerAgentOnly) {
+    return (
+      <p className="rounded-lg border border-border bg-muted/50 px-3 py-2 text-sm font-semibold text-foreground">
+        Sales Agent (Fixed credential role)
+      </p>
+    );
+  }
+  return (
+    <>
+      <Select
+        value={form.roleId}
+        onValueChange={(v) => setForm((p) => ({ ...p, roleId: v }))}
+      >
+        <SelectTrigger className={`h-10 bg-muted/30 border-muted/60 ${fieldErrors.roleId ? 'border-destructive focus-visible:ring-destructive' : ''}`}>
+          <SelectValue placeholder="Select secure system role" />
+        </SelectTrigger>
+        <SelectContent>
+          {rolesForSelect
+            .filter((r) => {
+              const name = typeof r === "object" ? r.name : String(r);
+              return name !== "DEALER_ADMIN" && name !== "DEALER_TECHNICIAN" && name !== "WAREHOUSE_MANAGER" && name !== "WAREHOUSE_STAFF";
+            })
+            .map((r) => (
+              <SelectItem key={roleIdOf(r)} value={roleIdOf(r)}>
+                {roleLabel(r)}
+              </SelectItem>
+            ))}
+        </SelectContent>
+      </Select>
+      {fieldErrors.roleId && (
+        <p className="text-xs text-destructive font-medium">{fieldErrors.roleId}</p>
+      )}
+    </>
+  );
+}
+
+function PermissionsField({ isSystemAdmin, permissions, form, togglePermission }) {
+  if (!isSystemAdmin || permissions.length === 0) return null;
+  return (
+    <div className="space-y-2 pt-2 border-t border-dashed">
+      <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Additional Permissions Override (optional)</Label>
+      <div className="max-h-40 space-y-2.5 overflow-y-auto rounded-xl border bg-muted/20 p-3">
+        {permissions.map((perm) => {
+          const pid = perm.id;
+          const checked = (form.permissionIds || []).includes(pid);
+          return (
+            <label
+              key={pid}
+              className="flex cursor-pointer items-start gap-3 text-sm group"
+            >
+              <Checkbox
+                checked={checked}
+                onCheckedChange={() => togglePermission(pid)}
+                aria-label={perm.name || String(pid)}
+                className="mt-0.5"
+              />
+              <span className="text-foreground text-xs font-medium">
+                <span className="font-bold text-foreground group-hover:text-primary transition-colors">
+                  {perm.name ?? `Permission ${pid}`}
+                </span>
+                {perm.description && (
+                  <span className="block text-muted-foreground text-[11px] mt-0.5 leading-relaxed font-normal">
+                    {perm.description}
+                  </span>
+                )}
+              </span>
+            </label>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export function UsersManagementView({
   filteredUsers,
   rolesForSelect,
@@ -100,8 +173,10 @@ export function UsersManagementView({
   setForm,
   fieldErrors,
   createUser,
+  updateUser,
   deleteUser,
   canDelete,
+  canUpdate,
   canCreate,
   managerAgentOnly,
   isSystemAdmin,
@@ -110,12 +185,28 @@ export function UsersManagementView({
   createOpen,
   openCreateModal,
   setCreateModalOpen,
+  editOpen,
+  openEditModal,
+  setEditModalOpen,
+  saving,
   togglePermission,
 }) {
+  const [userToDelete, setUserToDelete] = useState(null);
+  const showActions = canUpdate || canDelete;
+
+  const confirmDelete = async () => {
+    if (!userToDelete) return;
+    await deleteUser(userToDelete.id);
+    setUserToDelete(null);
+  };
+
+  const userToDeleteName = userToDelete
+    ? [userToDelete.firstName, userToDelete.lastName].filter(Boolean).join(" ") || userToDelete.email
+    : "";
+
   return (
     <div className="container mx-auto max-w-7xl space-y-6 p-4 sm:p-6 animate-in fade-in duration-200">
       
-      {/* الترويسة العلوية وقسم الفلترة الإدارية */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between border-b pb-5">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl flex items-center gap-2">
@@ -159,15 +250,6 @@ export function UsersManagementView({
         </div>
       </div>
 
-      {error && !createOpen && (
-        <Alert variant="destructive" className="border-destructive/30 bg-destructive/10">
-          <ShieldAlert className="h-4 w-4" />
-          <AlertTitle>System Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
-      {/* كرت عرض الجدول الرئيسي للموظفين */}
       <Card className="border border-border bg-card shadow-xs overflow-hidden">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
@@ -178,14 +260,14 @@ export function UsersManagementView({
                   <TableHead className="py-3.5 px-6 font-semibold">Email Address</TableHead>
                   <TableHead className="py-3.5 px-6 font-semibold">Security Role</TableHead>
                   <TableHead className="py-3.5 px-6 font-semibold">Status</TableHead>
-                  {canDelete && <TableHead className="py-3.5 px-6 text-right font-semibold">Actions</TableHead>}
+                  {showActions && <TableHead className="py-3.5 px-6 text-right font-semibold">Actions</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody className="divide-y divide-border/50">
                 {filteredUsers.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={canDelete ? 5 : 4}
+                      colSpan={showActions ? 5 : 4}
                       className="text-center py-16 text-muted-foreground"
                     >
                       <Users className="h-10 w-10 text-muted-foreground/40 mx-auto mb-2 stroke-1" />
@@ -197,8 +279,6 @@ export function UsersManagementView({
                     const fullName = [u.firstName, u.lastName].filter(Boolean).join(" ") || "—";
                     const isActive = isUserActive(u);
                     const roleName = getUserRoleName(u);
-                    
-                    // اختيار تنسيق اللون المقابل للرتبة أو اللون الافتراضي
                     const roleBadgeClass = ROLE_COLOR_STYLES[roleName] || ROLE_COLOR_STYLES.DEFAULT;
                     
                     return (
@@ -223,7 +303,6 @@ export function UsersManagementView({
 
                         <td className="py-3.5 px-6 text-sm font-medium text-foreground/90">{u.email}</td>
                         
-                        {/* عرض التلوين اللوجستي الأزرق الجديد لـ DEALER_TECHNICIAN وبقية الأقسام */}
                         <td className="py-3.5 px-6">
                           <Badge 
                             variant="outline" 
@@ -246,17 +325,32 @@ export function UsersManagementView({
                           </Badge>
                         </td>
 
-                        {canDelete && (
+                        {showActions && (
                           <td className="py-3.5 px-6 text-right">
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg"
-                              onClick={() => deleteUser(u.id)}
-                              title={`Delete ${fullName}`}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                            <div className="flex items-center justify-end gap-1">
+                              {canUpdate && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg"
+                                  onClick={() => openEditModal(u)}
+                                  title={`Edit ${fullName}`}
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                              )}
+                              {canDelete && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg"
+                                  onClick={() => setUserToDelete(u)}
+                                  title={`Delete ${fullName}`}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
                           </td>
                         )}
                       </TableRow>
@@ -269,7 +363,7 @@ export function UsersManagementView({
         </CardContent>
       </Card>
 
-      {/* نافذة منبثقة منسقة لإنشاء حساب مستخدم جديد */}
+      {/* Create User Dialog */}
       <Dialog open={createOpen} onOpenChange={setCreateModalOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl border-none p-6">
           <DialogHeader className="border-b pb-4">
@@ -365,37 +459,13 @@ export function UsersManagementView({
 
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">System Role *</Label>
-              {managerAgentOnly ? (
-                <p className="rounded-lg border border-border bg-muted/50 px-3 py-2 text-sm font-semibold text-foreground">
-                  Sales Agent (Fixed credential role)
-                </p>
-              ) : (
-                <>
-                  <Select
-                    value={form.roleId}
-                    onValueChange={(v) => setForm((p) => ({ ...p, roleId: v }))}
-                  >
-                    <SelectTrigger className={`h-10 bg-muted/30 border-muted/60 ${fieldErrors.roleId ? 'border-destructive focus-visible:ring-destructive' : ''}`}>
-                      <SelectValue placeholder="Select secure system role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {rolesForSelect
-                        .filter((r) => {
-                          const name = typeof r === "object" ? r.name : String(r);
-                          return name !== "DEALER_ADMIN" && name !== "DEALER_TECHNICIAN";
-                        })
-                        .map((r) => (
-                          <SelectItem key={roleIdOf(r)} value={roleIdOf(r)}>
-                            {roleLabel(r)}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                  {fieldErrors.roleId && (
-                    <p className="text-xs text-destructive font-medium">{fieldErrors.roleId}</p>
-                  )}
-                </>
-              )}
+              <RoleSelectField
+                form={form}
+                setForm={setForm}
+                fieldErrors={fieldErrors}
+                rolesForSelect={rolesForSelect}
+                managerAgentOnly={managerAgentOnly}
+              />
             </div>
 
             <div className="space-y-1.5">
@@ -426,52 +496,182 @@ export function UsersManagementView({
               />
             </div>
 
-            {isSystemAdmin && permissions.length > 0 && (
-              <div className="space-y-2 pt-2 border-t border-dashed">
-                <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Additional Permissions Override (optional)</Label>
-                <div className="max-h-40 space-y-2.5 overflow-y-auto rounded-xl border bg-muted/20 p-3">
-                  {permissions.map((perm) => {
-                    const pid = perm.id;
-                    const checked = (form.permissionIds || []).includes(pid);
-                    return (
-                      <label
-                        key={pid}
-                        className="flex cursor-pointer items-start gap-3 text-sm group"
-                      >
-                        <Checkbox
-                          checked={checked}
-                          onCheckedChange={() => togglePermission(pid)}
-                          aria-label={perm.name || String(pid)}
-                          className="mt-0.5"
-                        />
-                        <span className="text-foreground text-xs font-medium">
-                          <span className="font-bold text-foreground group-hover:text-primary transition-colors">
-                            {perm.name ?? `Permission ${pid}`}
-                          </span>
-                          {perm.description && (
-                            <span className="block text-muted-foreground text-[11px] mt-0.5 leading-relaxed font-normal">
-                              {perm.description}
-                            </span>
-                          )}
-                        </span>
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+            <PermissionsField
+              isSystemAdmin={isSystemAdmin}
+              permissions={permissions}
+              form={form}
+              togglePermission={togglePermission}
+            />
           </div>
 
           <DialogFooter className="gap-2 sm:gap-0 border-t pt-4">
             <Button type="button" variant="outline" className="h-10 rounded-xl font-semibold" onClick={() => setCreateModalOpen(false)}>
               Cancel
             </Button>
-            <Button type="button" className="h-10 rounded-xl font-semibold px-5" onClick={createUser}>
-              Create User
+            <Button type="button" className="h-10 rounded-xl font-semibold px-5" onClick={createUser} disabled={saving}>
+              {saving ? 'Creating…' : 'Create User'}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Edit User Dialog — SYSTEM_ADMIN only (canUpdate) */}
+      <Dialog open={editOpen} onOpenChange={setEditModalOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl border-none p-6">
+          <DialogHeader className="border-b pb-4">
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <Pencil className="h-5 w-5 text-primary" />
+              Edit User
+            </DialogTitle>
+            <DialogDescription className="text-xs">
+              Update account details. Password is not changed here. Required fields are marked with an asterisk (*).
+            </DialogDescription>
+          </DialogHeader>
+
+          {error && editOpen && (
+            <Alert variant="destructive" className="my-2 border-destructive/30 bg-destructive/10">
+              <AlertDescription className="text-xs font-semibold">{error}</AlertDescription>
+            </Alert>
+          )}
+
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="um-edit-first" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">First name *</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="um-edit-first"
+                    autoComplete="given-name"
+                    value={form.firstName}
+                    onChange={(e) => setForm((p) => ({ ...p, firstName: e.target.value }))}
+                    className={`pl-10 h-10 bg-muted/30 border-muted/60 ${fieldErrors.firstName ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+                  />
+                </div>
+                {fieldErrors.firstName && (
+                  <p className="text-xs text-destructive font-medium">{fieldErrors.firstName}</p>
+                )}
+              </div>
+              
+              <div className="space-y-1.5">
+                <Label htmlFor="um-edit-last" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Last name *</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="um-edit-last"
+                    autoComplete="family-name"
+                    value={form.lastName}
+                    onChange={(e) => setForm((p) => ({ ...p, lastName: e.target.value }))}
+                    className={`pl-10 h-10 bg-muted/30 border-muted/60 ${fieldErrors.lastName ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+                  />
+                </div>
+                {fieldErrors.lastName && (
+                  <p className="text-xs text-destructive font-medium">{fieldErrors.lastName}</p>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="um-edit-email" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Email Address *</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="um-edit-email"
+                  type="email"
+                  autoComplete="email"
+                  value={form.email}
+                  onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+                  className={`pl-10 h-10 bg-muted/30 border-muted/60 ${fieldErrors.email ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+                />
+              </div>
+              {fieldErrors.email && <p className="text-xs text-destructive font-medium">{fieldErrors.email}</p>}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">System Role *</Label>
+              <RoleSelectField
+                form={form}
+                setForm={setForm}
+                fieldErrors={fieldErrors}
+                rolesForSelect={rolesForSelect}
+                managerAgentOnly={false}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="um-edit-position" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Position Description (optional)</Label>
+              <div className="relative">
+                <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="um-edit-position"
+                  value={form.position}
+                  onChange={(e) => setForm((p) => ({ ...p, position: e.target.value }))}
+                  placeholder="e.g. Sales Agent"
+                  className="pl-10 h-10 bg-muted/30 border-muted/60"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-muted/20 px-4 py-3 mt-1">
+              <div className="space-y-0.5">
+                <Label htmlFor="um-edit-active" className="text-sm font-bold text-foreground">
+                  Active Account
+                </Label>
+                <p className="text-xs text-muted-foreground font-medium">Inactive users cannot sign in.</p>
+              </div>
+              <Switch
+                id="um-edit-active"
+                checked={form.active !== false}
+                onCheckedChange={(checked) => setForm((p) => ({ ...p, active: checked }))}
+              />
+            </div>
+
+            <PermissionsField
+              isSystemAdmin={isSystemAdmin}
+              permissions={permissions}
+              form={form}
+              togglePermission={togglePermission}
+            />
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0 border-t pt-4">
+            <Button type="button" variant="outline" className="h-10 rounded-xl font-semibold" onClick={() => setEditModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="button" className="h-10 rounded-xl font-semibold px-5" onClick={updateUser} disabled={saving}>
+              {saving ? 'Saving…' : 'Save Changes'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog
+        open={!!userToDelete}
+        onOpenChange={(open) => !open && setUserToDelete(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the user
+              <span className="font-semibold text-foreground">
+                {" "}
+                "{userToDeleteName}"{" "}
+              </span>
+              and remove their account from the system.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Delete User
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

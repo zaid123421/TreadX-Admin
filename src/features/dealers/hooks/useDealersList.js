@@ -52,14 +52,20 @@ export function useDealersList() {
       const params = {
         page: currentPage,
         size: pageSize,
-        status: statusFilter === 'all' ? undefined : statusFilter || undefined,
       };
 
-      // 💡 نستخدم الآن المتغير الـ Debounced بدلاً من القيمة الفورية
-      const response = debouncedSearchQuery
-        ? await dealersService.searchDealers(debouncedSearchQuery, params)
-        : await dealersService.getDealers(params);
-        
+      let response;
+      if (debouncedSearchQuery) {
+        response = await dealersService.searchDealers(debouncedSearchQuery, {
+          ...params,
+          status: statusFilter === 'all' ? undefined : statusFilter,
+        });
+      } else if (statusFilter !== 'all') {
+        response = await dealersService.getDealersByStatus(statusFilter, params);
+      } else {
+        response = await dealersService.getDealers(params);
+      }
+
       setDealers(response.content || []);
       setTotalPages(response.totalPages || 0);
     } catch (err) {
@@ -67,7 +73,7 @@ export function useDealersList() {
       setError(err);
     } finally {
       setLoading(false);
-      setIsInitialLoading(false); // 💡 تنتهي بمجرد اكتمال أول طلب بنجاح للواجهة
+      setIsInitialLoading(false);
     }
   };
 
@@ -77,13 +83,9 @@ export function useDealersList() {
   };
 
   const handleEditSubscription = async (id, data) => {
-    try {
-      await subscriptionsService.updateSubscription(id, data);
-      await loadDealers();
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    }
+    // Errors are surfaced inside SubscriptionEditModal — do not set list-level error
+    await subscriptionsService.updateSubscription(id, data);
+    await loadDealers();
   };
 
   return {

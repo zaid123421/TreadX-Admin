@@ -1,11 +1,8 @@
 import {
   validateStreetNumber,
 } from '@/features/leads/utils/leadUtils';
-import {
-  fetchCountries,
-  fetchProvincesByCountry,
-  fetchCitiesByProvince,
-} from '@/shared/services/addressApiService';
+
+export { resolveAddressIdsFromNames } from '@/shared/services/addressApiService';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const WAREHOUSE_CODE_RE = /^[A-Z0-9][A-Z0-9_-]*$/i;
@@ -25,9 +22,9 @@ function validateWarehousePhone(phone) {
 
 function validateWarehousePostal(postalCode) {
   if (!postalCode?.trim()) return 'Postal code is required';
-  if (postalCode.trim().length < 3 || postalCode.trim().length > 12) {
-    return 'Enter a valid postal code';
-  }
+  // if (postalCode.trim().length < 3 || postalCode.trim().length > 12) {
+  //   return 'Enter a valid postal code';
+  // }
   return null;
 }
 
@@ -110,7 +107,10 @@ export function validateWarehouseEditForm(formData) {
 
 function buildWarehouseAddressPayload(formData) {
   const unit = formData.unitNumber?.trim();
-  const notes = formData.operationalNotes?.trim();
+  const notes =
+    typeof formData.operationalNotes === 'string'
+      ? formData.operationalNotes.trim()
+      : '';
 
   return {
     streetName: formData.streetName.trim(),
@@ -168,33 +168,6 @@ export function normalizeWarehouseToEditForm(warehouse) {
     stateId: null,
     cityId: null,
   };
-}
-
-function matchByName(list, name) {
-  if (!name || !Array.isArray(list)) return null;
-  const target = String(name).trim().toLowerCase();
-  const row = list.find((item) => String(item.name ?? '').trim().toLowerCase() === target);
-  return row?.id ?? null;
-}
-
-/** Resolve address IDs from display names returned by GET list */
-export async function resolveAddressIdsFromNames(address = {}) {
-  const countries = await fetchCountries();
-  const countryId = matchByName(countries, address.country);
-  if (countryId == null) {
-    return { countryId: null, stateId: null, cityId: null };
-  }
-
-  const provinces = await fetchProvincesByCountry(countryId);
-  const stateId = matchByName(provinces, address.province);
-  if (stateId == null) {
-    return { countryId, stateId: null, cityId: null };
-  }
-
-  const cities = await fetchCitiesByProvince(stateId);
-  const cityId = matchByName(cities, address.city);
-
-  return { countryId, stateId, cityId };
 }
 
 export function computeChecklistSteps(formData) {

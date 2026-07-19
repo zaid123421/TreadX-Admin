@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback,useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { leadsService } from '../services/leadsApiService';
 
 import {
@@ -7,9 +8,14 @@ import {
   fetchProvincesByCountry,
   fetchCitiesByProvince,
   parseAddressSelectValue,
+  resolveAddressIdsFromNames,
 } from '@/shared/services/addressApiService';
 import { validatePostalCode, validatePhoneNumber, validateStreetNumber } from '../utils/leadUtils';
-import { normalizeLeadToForm, buildNotesForApi } from '../utils/leadFormUtils';
+import {
+  normalizeLeadToForm,
+  buildNotesForApi,
+  getLeadAddressNames,
+} from '../utils/leadFormUtils';
 
 export function useLeadWizard({ initialData = null, isEdit = false, onSuccess, onClose }) {
   const navigate = useNavigate();
@@ -17,6 +23,7 @@ export function useLeadWizard({ initialData = null, isEdit = false, onSuccess, o
   const [selectedFile, setSelectedFile] = useState(null);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isResolvingAddress, setIsResolvingAddress] = useState(false);
 
   const [countries, setCountries] = useState([]);
   const [provinces, setProvinces] = useState([]);
@@ -28,106 +35,139 @@ export function useLeadWizard({ initialData = null, isEdit = false, onSuccess, o
   const [provincesError, setProvincesError] = useState(null);
   const [citiesError, setCitiesError] = useState(null);
   const isInitialMount = useRef(true);
+  const leadId = initialData?.id;
 
+  // Normalize form + resolve address IDs from names when editing
   useEffect(() => {
-    setFormData(normalizeLeadToForm(initialData));
-  }, [initialData]);
-
-
-
-// 1. جلب الدول (عند فتح الصفحة أول مرة فقط)
-useEffect(() => {
-  let cancelled = false;
-  (async () => {
-    try {
-      setLoadingCountries(true);
-      const list = await fetchCountries();
-      if (!cancelled) setCountries(list);
-    } catch (e) {
-      if (!cancelled) setCountries([]);
-    } finally {
-      if (!cancelled) setLoadingCountries(false);
-    }
-  })();
-  return () => { cancelled = true; };
-}, []);
-
-// 2. جلب المحافظات عند تغيير الدولة
-useEffect(() => {
-  if (formData.countryId == null || formData.countryId === '') {
-    setProvinces([]);
-    return;
-  }
-  
-  let cancelled = false;
-  (async () => {
-    try {
-      setLoadingProvinces(true);
-      const list = await fetchProvincesByCountry(formData.countryId);
-      if (!cancelled) {
-        setProvinces(list);
-        
-        // إذا لم يكن التحميل الأول والـ countryId تغير يدوياً، هنا فقط نُصفّر الباقي
-        if (!isInitialMount.current) {
-          const hasCurrentState = list.some(p => String(p.id) === String(formData.stateId));
-          if (!hasCurrentState) {
-            setFormData(prev => ({ ...prev, stateId: null, cityId: null }));
-          }
-        }
-      }
-    } catch (e) {
-      if (!cancelled) setProvinces([]);
-    } finally {
-      if (!cancelled) setLoadingProvinces(false);
-    }
-  })();
-  
-  return () => { cancelled = true; };
-}, [formData.countryId]);
-
-// 3. جلب المدن عند تغيير المحافظة
-useEffect(() => {
-  if (formData.stateId == null || formData.stateId === '') {
-    setCities([]);
-    return;
-  }
-
-  let cancelled = false;
-  (async () => {
-    try {
-      setLoadingCities(true);
-      const list = await fetchCitiesByProvince(formData.stateId);
-      if (!cancelled) {
-        setCities(list);
-        
-        // إذا لم يكن التحميل الأول وتغيرت المحافظة يدوياً، نُصفّر المدينة
-        if (!isInitialMount.current) {
-          const hasCurrentCity = list.some(c => String(c.id) === String(formData.cityId));
-          if (!hasCurrentCity) {
-            setFormData(prev => ({ ...prev, cityId: null }));
-          }
-        } else {
-          // بمجرد انتهاء تحميل المدن في أول ريندر للتعديل، نغلق بوابة التحميل الأول
-          isInitialMount.current = false;
-        }
-      }
-    } catch (e) {
-      if (!cancelled) setCities([]);
-    } finally {
-      if (!cancelled) setLoadingCities(false);
-    }
-  })();
-
-  return () => { cancelled = true; };
-}, [formData.stateId]);
-
-// 💡 عند تغيير الـ initialData (مثلاً بعد جلب البيانات من السيرفر) نُعيد تفعيل حماية التحميل الأول
-useEffect(() => {
-  if (initialData) {
     isInitialMount.current = true;
-    setFormData(normalizeLeadToForm(initialData));
-  }
-}, [initialData]); // تعتمد فقط على الـ stateId
+    const normalized = normalizeLeadToForm(initialData);
+    setFormData(normalized);
+
+    if (!isEdit || !initialData) return;
+
+    const needsResolve =
+      normalized.countryId == null ||
+      normalized.stateId == null ||
+      normalized.cityId == null;
+    if (!needsResolve) return;
+
+    const names = getLeadAddressNames(initialData);
+    if (!names.country && !names.province && !names.city) return;
+
+    let cancelled = false;
+    (async () => {
+      setIsResolvingAddress(true);
+      try {
+        const ids = await resolveAddressIdsFromNames(names);
+        if (!cancelled) {
+          setFormData((prev) => ({ ...prev, ...ids }));
+        }
+      } catch {
+        if (!cancelled) {
+          toast.error('Could not resolve address — please re-select location');
+        }
+      } finally {
+        if (!cancelled) setIsResolvingAddress(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isEdit, leadId]);
+
+  // 1. Fetch countries once
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoadingCountries(true);
+        const list = await fetchCountries();
+        if (!cancelled) setCountries(list);
+      } catch {
+        if (!cancelled) setCountries([]);
+      } finally {
+        if (!cancelled) setLoadingCountries(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // 2. Fetch provinces when country changes
+  useEffect(() => {
+    if (formData.countryId == null || formData.countryId === '') {
+      setProvinces([]);
+      return;
+    }
+
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoadingProvinces(true);
+        const list = await fetchProvincesByCountry(formData.countryId);
+        if (!cancelled) {
+          setProvinces(list);
+
+          if (!isInitialMount.current) {
+            const hasCurrentState = list.some(
+              (p) => String(p.id) === String(formData.stateId),
+            );
+            if (!hasCurrentState) {
+              setFormData((prev) => ({ ...prev, stateId: null, cityId: null }));
+            }
+          }
+        }
+      } catch {
+        if (!cancelled) setProvinces([]);
+      } finally {
+        if (!cancelled) setLoadingProvinces(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [formData.countryId]);
+
+  // 3. Fetch cities when state changes
+  useEffect(() => {
+    if (formData.stateId == null || formData.stateId === '') {
+      setCities([]);
+      return;
+    }
+
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoadingCities(true);
+        const list = await fetchCitiesByProvince(formData.stateId);
+        if (!cancelled) {
+          setCities(list);
+
+          if (!isInitialMount.current) {
+            const hasCurrentCity = list.some(
+              (c) => String(c.id) === String(formData.cityId),
+            );
+            if (!hasCurrentCity) {
+              setFormData((prev) => ({ ...prev, cityId: null }));
+            }
+          } else {
+            isInitialMount.current = false;
+          }
+        }
+      } catch {
+        if (!cancelled) setCities([]);
+      } finally {
+        if (!cancelled) setLoadingCities(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [formData.stateId]);
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -238,6 +278,7 @@ useEffect(() => {
     selectedFile,
     errors,
     isSubmitting,
+    isResolvingAddress,
     countries,
     provinces,
     cities,

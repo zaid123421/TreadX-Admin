@@ -8,15 +8,21 @@ import {
 } from '@/shared/access/roleMatrix';
 import {
   createUser as createUserApi,
+  updateUser as updateUserApi,
   deleteUser as deleteUserApi,
+  fetchUser,
   fetchUsers,
   fetchRoles,
   fetchPermissions,
 } from '../services/accessControlApiService';
 import {
   validateCreateUserForm,
+  validateUpdateUserForm,
   buildCreateUserPayload,
+  buildUpdateUserPayload,
   mapCreateUserError,
+  mapUpdateUserError,
+  mapUserToForm,
 } from '../utils/userAccountForm';
 
 const emptyForm = () => ({
@@ -40,7 +46,11 @@ export function useUsersManagement() {
   const [fieldErrors, setFieldErrors] = useState({});
   const [roleFilter, setRoleFilter] = useState('all');
   const [createOpen, setCreateOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editingUserId, setEditingUserId] = useState(null);
+  const [saving, setSaving] = useState(false);
 
+  const canUpdate = canDeleteOrUpdateUsers(user);
   const canDelete = canDeleteOrUpdateUsers(user);
   const canCreate = canCreateUser(user);
   const managerAgentOnly = isSalesManagerLimitedToAgentCreation(user);
@@ -59,12 +69,21 @@ export function useUsersManagement() {
   const loadUsers = useCallback(async () => {
     try {
       const data = await fetchUsers();
-      setUsers(Array.isArray(data) ? data : []);
+      const list = Array.isArray(data) ? data : [];
+      // Sales Manager may only see Sales Agents
+      const scoped = managerAgentOnly
+        ? list.filter((u) => {
+            const name =
+              typeof u.role === 'object' ? u.role?.name : u.role || u.roleName;
+            return name === 'SALES_AGENT';
+          })
+        : list;
+      setUsers(scoped);
       setError('');
     } catch (err) {
       setError(err.response?.data?.message || err.message);
     }
-  }, []);
+  }, [managerAgentOnly]);
 
   useEffect(() => {
     loadUsers();
@@ -126,6 +145,7 @@ export function useUsersManagement() {
   const openCreateModal = useCallback(() => {
     setFieldErrors({});
     setError('');
+    setEditingUserId(null);
     resetFormAfterCreate();
     setCreateOpen(true);
   }, [resetFormAfterCreate]);
@@ -141,6 +161,36 @@ export function useUsersManagement() {
     },
     [resetFormAfterCreate]
   );
+
+  const openEditModal = useCallback(
+    async (userRow) => {
+      if (!canUpdate || !userRow?.id) return;
+      setFieldErrors({});
+      setError('');
+      setEditingUserId(userRow.id);
+      setForm(mapUserToForm(userRow));
+      setEditOpen(true);
+
+      try {
+        const detail = await fetchUser(userRow.id);
+        if (detail) setForm(mapUserToForm(detail));
+      } catch (err) {
+        // List row data is enough to edit; detail fetch is best-effort
+        console.warn('Failed to load user detail for edit:', err);
+      }
+    },
+    [canUpdate]
+  );
+
+  const setEditModalOpen = useCallback((open) => {
+    setEditOpen(open);
+    if (!open) {
+      setFieldErrors({});
+      setError('');
+      setEditingUserId(null);
+      setForm(emptyForm());
+    }
+  }, []);
 
   const togglePermission = useCallback((permissionId) => {
     const id = Number(permissionId);
@@ -161,6 +211,7 @@ export function useUsersManagement() {
       return;
     }
     try {
+      setSaving(true);
       const payload = buildCreateUserPayload(form, {
         includePermissions: isSystemAdmin,
       });
@@ -172,10 +223,46 @@ export function useUsersManagement() {
       const message = mapCreateUserError(err);
       setError(message);
       toast.error(message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const updateUser = async () => {
+    if (!canUpdate || editingUserId == null) {
+      toast.error('Only a System Administrator can update users.');
+      return;
+    }
+    setFieldErrors({});
+    setError('');
+    const validation = validateUpdateUserForm(form);
+    if (!validation.ok) {
+      setFieldErrors(validation.errors);
+      return;
+    }
+    try {
+      setSaving(true);
+      const payload = buildUpdateUserPayload(form, {
+        includePermissions: isSystemAdmin,
+      });
+      await updateUserApi(editingUserId, payload);
+      toast.success('User updated successfully');
+      setEditModalOpen(false);
+      await loadUsers();
+    } catch (err) {
+      const message = mapUpdateUserError(err);
+      setError(message);
+      toast.error(message);
+    } finally {
+      setSaving(false);
     }
   };
 
   const deleteUser = async (id) => {
+    if (!canDelete) {
+      toast.error('Only a System Administrator can delete users.');
+      return;
+    }
     try {
       await deleteUserApi(id);
       toast.success('User removed');
@@ -187,13 +274,24 @@ export function useUsersManagement() {
     }
   };
 
+  useEffect(() => {
+    if (managerAgentOnly) {
+      setRoleFilter('SALES_AGENT');
+    }
+  }, [managerAgentOnly]);
+
   const filteredUsers = useMemo(() => {
+    const roleNameOf = (u) =>
+      typeof u.role === 'object' ? u.role?.name : u.role || u.roleName;
+
+    if (managerAgentOnly) {
+      const agentsOnly = users.filter((u) => roleNameOf(u) === 'SALES_AGENT');
+      if (roleFilter === 'all' || roleFilter === 'SALES_AGENT') return agentsOnly;
+      return agentsOnly.filter((u) => roleNameOf(u) === roleFilter);
+    }
     if (roleFilter === 'all') return users;
-    return users.filter((u) => {
-      const name = typeof u.role === 'object' ? u.role?.name : u.role;
-      return name === roleFilter;
-    });
-  }, [users, roleFilter]);
+    return users.filter((u) => roleNameOf(u) === roleFilter);
+  }, [users, roleFilter, managerAgentOnly]);
 
   return {
     users,
@@ -206,8 +304,10 @@ export function useUsersManagement() {
     setForm,
     fieldErrors,
     createUser,
+    updateUser,
     deleteUser,
     canDelete,
+    canUpdate,
     canCreate,
     managerAgentOnly,
     isSystemAdmin,
@@ -216,6 +316,11 @@ export function useUsersManagement() {
     createOpen,
     openCreateModal,
     setCreateModalOpen,
+    editOpen,
+    openEditModal,
+    setEditModalOpen,
+    editingUserId,
+    saving,
     togglePermission,
   };
 }

@@ -4,7 +4,6 @@ import {
   fetchCountries,
   fetchProvincesByCountry,
   fetchCitiesByProvince,
-  parseAddressSelectValue,
 } from '@/shared/services/addressApiService';
 import { warehousesService } from '../services/warehousesApiService';
 import { DEFAULT_WAREHOUSE_FORM } from '../types/warehouseDefaults';
@@ -112,7 +111,8 @@ export function useProvisionWarehouse({ onSuccess, onClose }) {
   }, []);
 
   const handleCountryChange = useCallback((value) => {
-    const id = parseAddressSelectValue(value);
+    // Keep Radix string values as-is so SelectItem `value` always matches
+    const id = value == null || value === '' ? null : String(value);
     setFormData((prev) => ({
       ...prev,
       countryId: id,
@@ -129,7 +129,7 @@ export function useProvisionWarehouse({ onSuccess, onClose }) {
   }, []);
 
   const handleStateChange = useCallback((value) => {
-    const id = parseAddressSelectValue(value);
+    const id = value == null || value === '' ? null : String(value);
     setFormData((prev) => ({
       ...prev,
       stateId: id,
@@ -144,7 +144,7 @@ export function useProvisionWarehouse({ onSuccess, onClose }) {
   }, []);
 
   const handleCityChange = useCallback((value) => {
-    const id = parseAddressSelectValue(value);
+    const id = value == null || value === '' ? null : String(value);
     setFormData((prev) => ({ ...prev, cityId: id }));
     setErrors((prev) => ({ ...prev, cityId: undefined, submit: undefined }));
   }, []);

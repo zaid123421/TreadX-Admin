@@ -2,6 +2,18 @@ import React from 'react';
 import {ConversionRequestApprovalModalView} from './ConversionRequestApprovalModalView';
 import { conversionRequestsService } from '../services/conversionRequestsApiService';
 import { subscriptionPlansService } from '@/features/subscriptions/services/subscriptionPlansApiService';
+import { leadsService } from '@/features/leads/services/leadsApiService';
+import { splitContactFromNotes } from '@/features/leads/utils/leadFormUtils';
+
+const splitContactName = (contactName = '') => {
+  const parts = contactName.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return { firstName: '', lastName: '' };
+  if (parts.length === 1) return { firstName: parts[0], lastName: '' };
+  return {
+    firstName: parts[0],
+    lastName: parts.slice(1).join(' '),
+  };
+};
 
 export default function ConversionRequestApprovalModal({ request, onClose, onSuccess }) {
   const [subscriptionPlans, setSubscriptionPlans] = React.useState([]);
@@ -16,8 +28,8 @@ export default function ConversionRequestApprovalModal({ request, onClose, onSuc
     streetName: request?.streetName || '',
     aptUnitBldg: request?.aptUnitBldg || '',
     postalCode: request?.postalCode || '',
-    email: request?.email || '',
-    phoneNumber: request?.phoneNumber || '',
+    email: '',
+    phoneNumber: '',
     status: 'ACTIVE',
     totalUsers: 1,           // مسطح مباشرة
     subscriptionPlanId: '',
@@ -50,6 +62,42 @@ export default function ConversionRequestApprovalModal({ request, onClose, onSuc
 
     loadSubscriptionPlans();
   }, []);
+
+  // Prefill admin fields + phone from lead (adminEmail only — not contact email)
+  React.useEffect(() => {
+    const leadId = request?.leadId;
+    if (!leadId) return;
+
+    let cancelled = false;
+
+    const loadLeadDetails = async () => {
+      try {
+        const lead = await leadsService.getLead(leadId);
+        if (cancelled || !lead) return;
+
+        const { contactName } = splitContactFromNotes(lead);
+        const { firstName, lastName } = splitContactName(contactName);
+
+        setFormData((prev) => ({
+          ...prev,
+          leadId: lead.id ?? prev.leadId,
+          businessName: prev.businessName || lead.businessName || '',
+          phoneNumber: lead.phoneNumber || prev.phoneNumber,
+          adminFirstName: firstName || prev.adminFirstName,
+          adminLastName: lastName || prev.adminLastName,
+          adminEmail: lead.contactEmail || prev.adminEmail,
+          // email intentionally left for manual entry
+        }));
+      } catch (err) {
+        console.error('Failed to load lead for conversion approval:', err);
+      }
+    };
+
+    loadLeadDetails();
+    return () => {
+      cancelled = true;
+    };
+  }, [request?.leadId]);
 
   const handleSubmit = async () => {
     // Validation

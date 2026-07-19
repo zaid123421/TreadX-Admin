@@ -7,6 +7,7 @@ export function useChangePassword() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const submit = async () => {
     setError('');
@@ -19,11 +20,12 @@ export function useChangePassword() {
       setError('New password and confirm password must match');
       return;
     }
+    setLoading(true);
     try {
       await changePasswordApi({
         currentPassword,
         newPassword,
-       confirmPassword,
+        confirmPassword,
       });
       setMessage('Password changed successfully');
       setCurrentPassword('');
@@ -31,6 +33,8 @@ export function useChangePassword() {
       setConfirmPassword('');
     } catch (err) {
       setError(err.response?.data?.message || err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -43,6 +47,7 @@ export function useChangePassword() {
     setConfirmPassword,
     message,
     error,
+    loading,
     submit,
   };
 }
