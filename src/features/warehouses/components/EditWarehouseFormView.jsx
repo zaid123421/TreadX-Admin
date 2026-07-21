@@ -16,7 +16,7 @@ import { handleStreetNumberChange } from '@/features/leads/utils/leadUtils';
 
 const wms = {
   input:
-    'h-10 rounded-md border-input bg-background text-foreground placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-primary/25',
+    'h-10 rounded-md border-input bg-background text-foreground placeholder:text-placeholder focus-visible:border-primary focus-visible:ring-primary/25',
   label: 'text-sm text-muted-foreground font-normal',
   req: 'text-destructive',
   goldBtn: 'rounded-md bg-primary text-primary-foreground font-medium hover:opacity-90',
@@ -31,12 +31,16 @@ function RequiredLabel({ htmlFor, children }) {
   );
 }
 
+/**
+ * Radix SelectValue only keeps ItemText while the menu is open. Pass an explicit
+ * label as children so the trigger stays filled after close.
+ */
 function selectedLabel(list, id) {
   if (id == null || id === '') return undefined;
-  const row = list.find((x) => String(x.id) === String(id));
+  const row = (list ?? []).find((x) => String(x.id) === String(id));
   const name = row?.name ?? row?.label;
   if (name != null && String(name).trim() !== '') return String(name);
-  return undefined;
+  return String(id);
 }
 
 export function EditWarehouseFormView({
@@ -187,16 +191,20 @@ export function EditWarehouseFormView({
         <div className="space-y-2">
           <RequiredLabel htmlFor="edit-countryId">Country</RequiredLabel>
           <Select
+            key={`edit-country-${formData.countryId ?? 'empty'}`}
             value={formData.countryId != null ? String(formData.countryId) : undefined}
             onValueChange={handleCountryChange}
             disabled={loadingCountries || isResolvingAddress}
           >
-            <SelectTrigger className={`${wms.input} ${inputError('countryId')}`}>
+            <SelectTrigger className={`${wms.input} !w-full ${inputError('countryId')}`}>
               <SelectValue placeholder={loadingCountries ? 'Loading…' : 'Select country'}>
                 {selectedLabel(countries, formData.countryId)}
               </SelectValue>
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent
+              position="item-aligned"
+              className="border-border bg-popover text-popover-foreground max-h-60 z-[200]"
+            >
               {countries.map((c) => (
                 <SelectItem key={String(c.id)} value={String(c.id)}>
                   {c.name}
@@ -210,16 +218,20 @@ export function EditWarehouseFormView({
         <div className="space-y-2">
           <RequiredLabel htmlFor="edit-stateId">State / Province</RequiredLabel>
           <Select
+            key={`edit-state-${formData.stateId ?? 'empty'}`}
             value={formData.stateId != null ? String(formData.stateId) : undefined}
             onValueChange={handleStateChange}
             disabled={!formData.countryId || loadingProvinces || isResolvingAddress}
           >
-            <SelectTrigger className={`${wms.input} ${inputError('stateId')}`}>
+            <SelectTrigger className={`${wms.input} !w-full ${inputError('stateId')}`}>
               <SelectValue placeholder={loadingProvinces ? 'Loading…' : 'Select state'}>
                 {selectedLabel(provinces, formData.stateId)}
               </SelectValue>
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent
+              position="item-aligned"
+              className="border-border bg-popover text-popover-foreground max-h-60 z-[200]"
+            >
               {provinces.map((p) => (
                 <SelectItem key={String(p.id)} value={String(p.id)}>
                   {p.name}
@@ -233,16 +245,20 @@ export function EditWarehouseFormView({
         <div className="space-y-2 sm:col-span-2">
           <RequiredLabel htmlFor="edit-cityId">City</RequiredLabel>
           <Select
+            key={`edit-city-${formData.cityId ?? 'empty'}`}
             value={formData.cityId != null ? String(formData.cityId) : undefined}
             onValueChange={handleCityChange}
             disabled={!formData.stateId || loadingCities || isResolvingAddress}
           >
-            <SelectTrigger className={`${wms.input} ${inputError('cityId')}`}>
+            <SelectTrigger className={`${wms.input} !w-full ${inputError('cityId')}`}>
               <SelectValue placeholder={loadingCities ? 'Loading…' : 'Select city'}>
                 {selectedLabel(cities, formData.cityId)}
               </SelectValue>
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent
+              position="item-aligned"
+              className="border-border bg-popover text-popover-foreground max-h-60 z-[200]"
+            >
               {cities.map((c) => (
                 <SelectItem key={String(c.id)} value={String(c.id)}>
                   {c.name}
@@ -259,9 +275,9 @@ export function EditWarehouseFormView({
           </Label>
           <Textarea
             id="edit-operationalNotes"
-            value={formData.operationalNotes}
+            value={formData.operationalNotes ?? ''}
             onChange={(e) => handleInputChange('operationalNotes', e.target.value)}
-            className="min-h-[80px] resize-y border-input bg-background"
+            className="min-h-[80px] resize-y border-input bg-background text-foreground"
             rows={3}
           />
         </div>

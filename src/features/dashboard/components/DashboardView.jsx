@@ -168,7 +168,7 @@ export function DashboardView({ user, vm }) {
                 </div>
               </div>
             </Link>
-            <Link to="/dealers/add" className="block cursor-pointer rounded-lg border border-border p-4 transition-colors hover:bg-muted/40">
+            {/* <Link to="/dealers/add" className="block cursor-pointer rounded-lg border border-border p-4 transition-colors hover:bg-muted/40">
               <div className="flex items-center gap-3">
                 <Building2 className="h-8 w-8 text-success" />
                 <div>
@@ -176,7 +176,7 @@ export function DashboardView({ user, vm }) {
                   <p className="text-sm text-muted-foreground">{t('addDealerDesc')}</p>
                 </div>
               </div>
-            </Link>
+            </Link> */}
             <div className="cursor-pointer rounded-lg border border-border p-4 transition-colors hover:bg-muted/40">
               <div className="flex items-center gap-3">
                 <Package className="h-8 w-8 text-info" />

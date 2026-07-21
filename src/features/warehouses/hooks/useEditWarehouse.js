@@ -4,14 +4,13 @@ import {
   fetchCountries,
   fetchProvincesByCountry,
   fetchCitiesByProvince,
-  parseAddressSelectValue,
+  resolveAddressIdsFromNames,
 } from '@/shared/services/addressApiService';
 import { warehousesService } from '../services/warehousesApiService';
 import {
   validateWarehouseEditForm,
   buildWarehouseUpdatePayload,
   normalizeWarehouseToEditForm,
-  resolveAddressIdsFromNames,
   computeEditChecklistSteps,
 } from '../utils/warehouseFormUtils';
 
@@ -28,6 +27,9 @@ export function useEditWarehouse({ warehouse, onSuccess, onClose }) {
   const [loadingProvinces, setLoadingProvinces] = useState(false);
   const [loadingCities, setLoadingCities] = useState(false);
   const isInitialMount = useRef(true);
+  const formDataRef = useRef(formData);
+  formDataRef.current = formData;
+  const warehouseId = warehouse?.id;
 
   useEffect(() => {
     if (!warehouse) return;
@@ -55,7 +57,8 @@ export function useEditWarehouse({ warehouse, onSuccess, onClose }) {
     return () => {
       cancelled = true;
     };
-  }, [warehouse]);
+    // Intentionally key off id so reference changes do not wipe in-progress edits
+  }, [warehouseId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -149,7 +152,7 @@ export function useEditWarehouse({ warehouse, onSuccess, onClose }) {
   }, []);
 
   const handleCountryChange = useCallback((value) => {
-    const id = parseAddressSelectValue(value);
+    const id = value == null || value === '' ? null : String(value);
     isInitialMount.current = false;
     setFormData((prev) => ({
       ...prev,
@@ -167,7 +170,7 @@ export function useEditWarehouse({ warehouse, onSuccess, onClose }) {
   }, []);
 
   const handleStateChange = useCallback((value) => {
-    const id = parseAddressSelectValue(value);
+    const id = value == null || value === '' ? null : String(value);
     isInitialMount.current = false;
     setFormData((prev) => ({
       ...prev,
@@ -183,21 +186,22 @@ export function useEditWarehouse({ warehouse, onSuccess, onClose }) {
   }, []);
 
   const handleCityChange = useCallback((value) => {
-    const id = parseAddressSelectValue(value);
+    const id = value == null || value === '' ? null : String(value);
     setFormData((prev) => ({ ...prev, cityId: id }));
     setErrors((prev) => ({ ...prev, cityId: undefined, submit: undefined }));
   }, []);
 
   const handleSubmit = async () => {
-    const nextErrors = validateWarehouseEditForm(formData);
+    const data = formDataRef.current;
+    const nextErrors = validateWarehouseEditForm(data);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
     setIsSubmitting(true);
     try {
-      const payload = buildWarehouseUpdatePayload(formData);
+      const payload = buildWarehouseUpdatePayload(data);
       await warehousesService.updateWarehouse(warehouse.id, payload);
-      toast.success(`"${formData.warehouseName}" updated successfully`);
+      toast.success(`"${data.warehouseName}" updated successfully`);
       onSuccess?.();
     } catch (error) {
       setErrors((prev) => ({ ...prev, submit: error.message }));

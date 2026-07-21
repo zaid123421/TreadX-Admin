@@ -41,10 +41,10 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { LeadStatus } from "@/shared/types/enums";
-import { formatFullName } from "@/shared/utils/formatters";
 import LeadContactModal from "./LeadContactModal";
 import LeadValidationModal from "./LeadValidationModal";
 import ConversionRequestModal from "./ConversionRequestModal";
+import LeadHistoryTimeline from "./LeadHistoryTimeline";
 import {
   formatPostalCode,
   formatPhoneNumber,
@@ -98,6 +98,10 @@ export default function LeadDetailView({ vm }) {
     getInitials,
     previewContentType,
     deleting,
+    history,
+    historyLoading,
+    historyError,
+    loadHistory,
   } = vm;
 
   const [showConversionModal, setShowConversionModal] = React.useState(false);
@@ -506,64 +510,12 @@ export default function LeadDetailView({ vm }) {
                 </TabsContent>
 
                 <TabsContent value="history" className="space-y-4">
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3 p-3 bg-muted/40 rounded-lg">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <p className="font-medium">Lead Created</p>
-                        <p className="text-sm text-muted-foreground">
-                          {formatDate(lead.createdAt)}
-                          {lead.addedByName && ` by ${lead.addedByName}`}
-                        </p>
-                      </div>
-                    </div>
-
-                    {lead.updatedAt !== lead.createdAt && (
-                      <div className="flex items-center space-x-3 p-3 bg-muted/40 rounded-lg">
-                        <Edit className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="font-medium">Last Updated</p>
-                          <p className="text-sm text-muted-foreground">
-                            {formatDate(lead.updatedAt)}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-                    {lead.validatedAt && (
-                      <div className="flex items-center space-x-3 p-3 bg-muted/40 rounded-lg">
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                        <div>
-                          <p className="font-medium">Lead Validated</p>
-                          <p className="text-sm text-muted-foreground">
-                            {formatDate(lead.validatedAt)} by{" "}
-                            {formatFullName(
-                              lead.validatedByFirstName,
-                              lead.validatedByLastName,
-                            )}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-                    {lead.assignedAt &&
-                      lead.assignedToFirstName &&
-                      lead.assignedToLastName && (
-                        <div className="flex items-center space-x-3 p-3 bg-muted/40 rounded-lg">
-                          <UserCheck className="h-4 w-4 text-blue-500" />
-                          <div>
-                            <p className="font-medium">Lead Assigned</p>
-                            <p className="text-sm text-muted-foreground">
-                              {formatDate(lead.assignedAt)} to{" "}
-                              {formatFullName(
-                                lead.assignedToFirstName,
-                                lead.assignedToLastName,
-                              )}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                  </div>
+                  <LeadHistoryTimeline
+                    history={history}
+                    loading={historyLoading}
+                    error={historyError}
+                    onRetry={loadHistory}
+                  />
                 </TabsContent>
               </Tabs>
             </CardContent>
@@ -609,17 +561,23 @@ export default function LeadDetailView({ vm }) {
                       <SelectValue placeholder="Assign to sales agent" />
                     </SelectTrigger>
                     <SelectContent>
-                      {agents.map((agent) => (
-                        <SelectItem key={agent.id} value={String(agent.id)}>
-                          {agent.firstName} {agent.lastName}
+                      {agents.length === 0 ? (
+                        <SelectItem value="__none" disabled>
+                          No sales agents available
                         </SelectItem>
-                      ))}
+                      ) : (
+                        agents.map((agent) => (
+                          <SelectItem key={agent.id} value={String(agent.id)}>
+                            {agent.firstName} {agent.lastName}
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                   <Button
                     className="w-full"
                     onClick={handleAssignLead}
-                    disabled={!selectedAgentId || assigning}
+                    disabled={!selectedAgentId || assigning || agents.length === 0}
                   >
                     {assigning ? "Assigning..." : "Assign Lead"}
                   </Button>

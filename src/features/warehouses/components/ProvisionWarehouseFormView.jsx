@@ -31,7 +31,7 @@ const wms = {
   sectionDesc: 'text-xs text-muted-foreground',
   // Standard input, minimal height
   input:
-    'h-9 rounded-md border-input bg-background text-foreground text-sm placeholder:text-muted-foreground/80 focus-visible:border-primary focus-visible:ring-primary/20',
+    'h-9 rounded-md border-input bg-background text-foreground text-sm placeholder:text-placeholder focus-visible:border-primary focus-visible:ring-primary/20',
   label: 'text-xs text-muted-foreground font-normal',
   req: 'text-destructive',
   goldBtn: 'rounded-md bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 duration-normal ease-standard',
@@ -46,12 +46,17 @@ function RequiredLabel({ htmlFor, children }) {
   );
 }
 
+/**
+ * Radix SelectValue only keeps ItemText while the menu is open. Pass an explicit
+ * label as children so the trigger stays filled after close. Always return a
+ * string when `id` is set so Radix treats Value as having children.
+ */
 function selectedLabel(list, id) {
   if (id == null || id === '') return undefined;
-  const row = list.find((x) => String(x.id) === String(id));
+  const row = (list ?? []).find((x) => String(x.id) === String(id));
   const name = row?.name ?? row?.label;
   if (name != null && String(name).trim() !== '') return String(name);
-  return undefined;
+  return String(id);
 }
 
 function SectionCard({ title, description, children, className = '' }) {
@@ -226,16 +231,20 @@ export function ProvisionWarehouseFormView({
             <div className="space-y-1.5 sm:col-span-4">
               <RequiredLabel htmlFor="countryId">Country</RequiredLabel>
               <Select
+                key={`country-${formData.countryId ?? 'empty'}`}
                 value={formData.countryId != null ? String(formData.countryId) : undefined}
                 onValueChange={handleCountryChange}
                 disabled={loadingCountries}
               >
-                <SelectTrigger className={`${wms.input} ${inputError('countryId')}`}>
+                <SelectTrigger className={`${wms.input} !w-full ${inputError('countryId')}`}>
                   <SelectValue placeholder={loadingCountries ? 'Loading…' : 'Select country'}>
                     {selectedLabel(countries, formData.countryId)}
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent
+                  position="item-aligned"
+                  className="border-border bg-popover text-popover-foreground max-h-60 z-[200]"
+                >
                   {countries.map((c) => (
                     <SelectItem key={String(c.id)} value={String(c.id)}>
                       {c.name}
@@ -248,16 +257,28 @@ export function ProvisionWarehouseFormView({
             <div className="space-y-1.5 sm:col-span-4">
               <RequiredLabel htmlFor="stateId">State</RequiredLabel>
               <Select
+                key={`state-${formData.stateId ?? 'empty'}`}
                 value={formData.stateId != null ? String(formData.stateId) : undefined}
                 onValueChange={handleStateChange}
                 disabled={!formData.countryId || loadingProvinces}
               >
-                <SelectTrigger className={`${wms.input} ${inputError('stateId')}`}>
-                  <SelectValue placeholder={loadingProvinces ? 'Loading…' : 'Select state'}>
+                <SelectTrigger className={`${wms.input} !w-full ${inputError('stateId')}`}>
+                  <SelectValue
+                    placeholder={
+                      !formData.countryId
+                        ? 'Select country first'
+                        : loadingProvinces
+                          ? 'Loading…'
+                          : 'Select state'
+                    }
+                  >
                     {selectedLabel(provinces, formData.stateId)}
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent
+                  position="item-aligned"
+                  className="border-border bg-popover text-popover-foreground max-h-60 z-[200]"
+                >
                   {provinces.map((p) => (
                     <SelectItem key={String(p.id)} value={String(p.id)}>
                       {p.name}
@@ -270,16 +291,28 @@ export function ProvisionWarehouseFormView({
             <div className="space-y-1.5 sm:col-span-4">
               <RequiredLabel htmlFor="cityId">City</RequiredLabel>
               <Select
+                key={`city-${formData.cityId ?? 'empty'}`}
                 value={formData.cityId != null ? String(formData.cityId) : undefined}
                 onValueChange={handleCityChange}
                 disabled={!formData.stateId || loadingCities}
               >
-                <SelectTrigger className={`${wms.input} ${inputError('cityId')}`}>
-                  <SelectValue placeholder={loadingCities ? 'Loading…' : 'Select city'}>
+                <SelectTrigger className={`${wms.input} !w-full ${inputError('cityId')}`}>
+                  <SelectValue
+                    placeholder={
+                      !formData.stateId
+                        ? 'Select state first'
+                        : loadingCities
+                          ? 'Loading…'
+                          : 'Select city'
+                    }
+                  >
                     {selectedLabel(cities, formData.cityId)}
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent
+                  position="item-aligned"
+                  className="border-border bg-popover text-popover-foreground max-h-60 z-[200]"
+                >
                   {cities.map((c) => (
                     <SelectItem key={String(c.id)} value={String(c.id)}>
                       {c.name}

@@ -13,7 +13,8 @@ const ThemeContext = createContext(null);
 const resolveInitialTheme = () => {
   const saved = localStorage.getItem(THEME_KEY);
   if (saved === "light" || saved === "dark") return saved;
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  return "dark";
+  // return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 };
 
 export function ThemeProvider({ children }) {

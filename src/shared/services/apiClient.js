@@ -58,7 +58,8 @@ apiClient.interceptors.request.use(
     const isAuthRequest =
       config.url &&
       (config.url.includes(API_ENDPOINTS.LOGIN) ||
-        config.url.includes(API_ENDPOINTS.REFRESH));
+        config.url.includes(API_ENDPOINTS.REFRESH) ||
+        config.url.includes(API_ENDPOINTS.FORGOT_PASSWORD));
 
     if (isAuthRequest) {
       if (ENABLE_API_DEBUG) {
@@ -84,10 +85,14 @@ apiClient.interceptors.response.use(
     const status = error.response?.status;
     const responseData = error.response?.data;
     const isRefreshRequest = originalRequest?.url?.includes(API_ENDPOINTS.REFRESH);
+    const isPublicAuthRequest =
+      originalRequest?.url?.includes(API_ENDPOINTS.LOGIN) ||
+      originalRequest?.url?.includes(API_ENDPOINTS.FORGOT_PASSWORD);
 
     const canTryRefresh =
       originalRequest &&
       !isRefreshRequest &&
+      !isPublicAuthRequest &&
       !originalRequest._retry &&
       shouldAttemptTokenRefresh(status, responseData);
 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { useAuth } from '@/app/providers/AuthContext';
 import {
   canConvertLeadToDealer,
@@ -28,10 +29,17 @@ export function useLeadDetail() {
   const [assigning, setAssigning] = useState(false);
   const [agents, setAgents] = useState([]);
   const [selectedAgentId, setSelectedAgentId] = useState('');
+  const [history, setHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState(null);
 
   useEffect(() => {
     if (id) loadLead();
   }, [id, user?.id, user?.roleName]);
+
+  useEffect(() => {
+    if (id) loadHistory();
+  }, [id]);
 
   useEffect(() => {
     if (user?.roleName === 'SYSTEM_ADMIN' || user?.roleName === 'SALES_MANAGER') {
@@ -66,11 +74,27 @@ export function useLeadDetail() {
     }
   };
 
+  const loadHistory = async () => {
+    if (!id) return;
+    try {
+      setHistoryLoading(true);
+      setHistoryError(null);
+      const data = await leadsService.getLeadHistory(id);
+      setHistory(data);
+    } catch (err) {
+      setHistory([]);
+      setHistoryError(err.message || 'Failed to load lead history');
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
   const loadAgents = async () => {
     try {
       const salesAgents = await fetchSalesAgents();
-      setAgents(salesAgents);
-    } catch (_) {
+      setAgents(Array.isArray(salesAgents) ? salesAgents : []);
+    } catch (err) {
+      console.error('Failed to load sales agents', err);
       setAgents([]);
     }
   };
@@ -90,15 +114,18 @@ export function useLeadDetail() {
   const handleContactSuccess = (updatedLead) => {
     setLead(updatedLead);
     setShowContactModal(false);
+    loadHistory();
   };
 
   const handleValidationSuccess = (updatedLead) => {
     setLead(updatedLead);
     setShowValidationModal(false);
+    loadHistory();
   };
 
   const handleConversionSuccess = async () => {
     await loadLead();
+    await loadHistory();
   };
 
   const handleTakeLead = async () => {
@@ -107,6 +134,7 @@ export function useLeadDetail() {
       const updatedLead = await leadsService.takeLead(lead.id);
       setLead(updatedLead);
       setMessage({ text: 'Lead taken successfully!', type: 'success' });
+      loadHistory();
     } catch (err) {
       setMessage({ text: err.message, type: 'error' });
     } finally {
@@ -137,10 +165,11 @@ const handleDelete = async () => {
       setAssigning(true);
       const updated = await leadsService.assignLead(lead.id, selectedAgentId);
       setLead(updated);
-      setMessage({ text: 'Lead assigned successfully', type: 'success' });
       setSelectedAgentId('');
+      loadHistory();
+      toast.success('Lead assigned successfully');
     } catch (err) {
-      setMessage({ text: err.message, type: 'error' });
+      toast.error(err.message || 'Failed to assign lead');
     } finally {
       setAssigning(false);
     }
@@ -237,5 +266,9 @@ const handleDelete = async () => {
     getInitials: getBusinessInitials,
     previewContentType,
     deleting,
+    history,
+    historyLoading,
+    historyError,
+    loadHistory,
   };
 }

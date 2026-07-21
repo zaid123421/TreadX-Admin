@@ -14,6 +14,7 @@ const ChangePassword = () => {
       setConfirmPassword={vm.setConfirmPassword}
       message={vm.message}
       error={vm.error}
+      loading={vm.loading}
       onSubmit={vm.submit}
     />
   );

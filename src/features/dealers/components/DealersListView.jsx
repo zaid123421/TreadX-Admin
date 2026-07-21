@@ -4,9 +4,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
 import { Input } from '@/shared/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/ui/select';
 import { Search, Eye, Building2, Edit, ChevronLeft, ChevronRight, Mail, Phone } from 'lucide-react';
 import { formatPhoneNumber } from '../../leads/utils/leadUtils';
 import { DEALER_STATUS_BADGE_STYLES } from '../utils/dealerUtils';
+import { DealerStatus } from '@/shared/types/enums';
 import ErrorPage from '@/app/components/ErrorPage';
 import SubscriptionEditModal from '../../subscriptions/components/SubscriptionEditModal';
 
@@ -75,23 +83,35 @@ export function DealersListView({
 
       <div className="max-w-7xl mx-auto space-y-5">
         
-        {/* شريط البحث المطور الذكي */}
+        {/* شريط البحث + فلترة الحالة */}
         <Card className="border-none shadow-xs bg-card">
           <CardContent className="p-4">
-            <div className="relative w-full max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                placeholder="Search dealers by name or contact..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-10 h-10 bg-muted/30 focus-visible:bg-background border-muted/60" // تم تعديل الـ pr-10 ليناسب لودر البحث
-              />
-              {/* 💡 لودر صغير وناعم يدور داخل حقل البحث أثناء جلب البيانات بالخلفية */}
-              {loading && (
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                </div>
-              )}
+            <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+              <div className="relative w-full max-w-md">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  placeholder="Searches dealers by name, email, or phone number...."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 pr-10 h-10 bg-muted/30 focus-visible:bg-background border-muted/60"
+                />
+                {loading && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                  </div>
+                )}
+              </div>
+
+              <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
+                <SelectTrigger className="w-full sm:w-48 h-10 bg-muted/30 border-muted/60">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value={DealerStatus.ACTIVE}>Active</SelectItem>
+                  <SelectItem value={DealerStatus.INACTIVE}>Inactive</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>
@@ -116,7 +136,9 @@ export function DealersListView({
                 </div>
                 <h3 className="text-lg font-semibold text-foreground mb-1">No dealers found</h3>
                 <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-                  {searchQuery ? 'Try adjusting your search query or clear the filter to start over.' : 'No dealers are registered in the system yet.'}
+                  {searchQuery || statusFilter !== 'all'
+                    ? 'Try adjusting your search query or status filter to start over.'
+                    : 'No dealers are registered in the system yet.'}
                 </p>
               </div>
             ) : (
