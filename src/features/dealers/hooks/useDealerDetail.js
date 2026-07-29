@@ -12,6 +12,7 @@ export function useDealerDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeSubscription, setActiveSubscription] = useState(null);
+  const [primaryWarehouse, setPrimaryWarehouse] = useState(null);
 
   useEffect(() => {
     loadDealer();
@@ -37,6 +38,14 @@ export function useDealerDetail() {
         console.error("خطأ في جلب الاشتراك الفعلي:", subErr);
         setActiveSubscription(null);
       }
+
+      try {
+        const warehouseRouting = await dealersService.getPrimaryWarehouse(id);
+        setPrimaryWarehouse(warehouseRouting);
+      } catch (whErr) {
+        console.error('Error loading primary warehouse:', whErr);
+        setPrimaryWarehouse(null);
+      }
     } catch (err) {
       console.error('Error loading dealer:', err);
       setError(err);
@@ -55,6 +64,29 @@ export function useDealerDetail() {
     }
   };
 
+  const loadPrimaryWarehouse = async () => {
+    try {
+      const warehouseRouting = await dealersService.getPrimaryWarehouse(id);
+      setPrimaryWarehouse(warehouseRouting);
+      return warehouseRouting;
+    } catch (err) {
+      console.error('Error loading primary warehouse:', err);
+      setPrimaryWarehouse(null);
+      throw err;
+    }
+  };
+
+  const handleSetPrimaryWarehouse = async (warehouseId) => {
+    const result = await dealersService.setPrimaryWarehouse(id, warehouseId);
+    setPrimaryWarehouse(result);
+    return result;
+  };
+
+  const handleDeletePrimaryWarehouse = async () => {
+    await dealersService.deletePrimaryWarehouse(id);
+    setPrimaryWarehouse(null);
+  };
+
   return {
     user,
     id,
@@ -65,5 +97,9 @@ export function useDealerDetail() {
     loadDealer,
     handleDelete,
     activeSubscription,
+    primaryWarehouse,
+    loadPrimaryWarehouse,
+    handleSetPrimaryWarehouse,
+    handleDeletePrimaryWarehouse,
   };
 }

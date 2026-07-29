@@ -2,21 +2,44 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
-import { Mail, Phone, MapPin, User, Building2, Users, Shield, Wrench, CreditCard, Calendar, ArrowLeft, Trash2 } from 'lucide-react';
+import { Mail, Phone, MapPin, User, Building2, Users, Shield, Wrench, CreditCard, Calendar, ArrowLeft, Trash2, Warehouse, Edit, Link2 } from 'lucide-react';
 import { formatPostalCode, formatPhoneNumber } from '../../leads/utils/leadUtils';
 import { displayDealerId, DEALER_STATUS_BADGE_STYLES } from '../utils/dealerUtils';
 import ErrorPage from '@/app/components/ErrorPage';
 import { UserRole } from '@/shared/types/api';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/shared/ui/alert-dialog';
 import { Switch } from '@/shared/ui/switch';
 import { subscriptionPlansService } from '@/features/subscriptions/services/subscriptionPlansApiService';
 import { subscriptionsService } from '@/features/subscriptions/services/subscriptionsApiService';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { canCreateDealerSubscription } from '@/shared/access/roleMatrix';
+import { warehousesService } from '@/features/warehouses/services/warehousesApiService';
 
 export default function DealerDetailView({ vm }) {
-  const { user, navigate, dealer, loading, error, loadDealer, handleDelete, activeSubscription } = vm;
+  const {
+    user,
+    navigate,
+    dealer,
+    loading,
+    error,
+    loadDealer,
+    handleDelete,
+    activeSubscription,
+    primaryWarehouse,
+    handleSetPrimaryWarehouse,
+    handleDeletePrimaryWarehouse,
+  } = vm;
   const canCreateSubscription = canCreateDealerSubscription(user);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [plans, setPlans] = useState([]);
@@ -33,6 +56,13 @@ export default function DealerDetailView({ vm }) {
     DEALER_ADMIN: 1,
     DEALER_TECHNICIAN: 0,
   });
+  const [isWarehouseDialogOpen, setIsWarehouseDialogOpen] = useState(false);
+  const [isDeleteWarehouseOpen, setIsDeleteWarehouseOpen] = useState(false);
+  const [warehouses, setWarehouses] = useState([]);
+  const [warehousesLoading, setWarehousesLoading] = useState(false);
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState(null);
+  const [savingWarehouse, setSavingWarehouse] = useState(false);
+  const [deletingWarehouse, setDeletingWarehouse] = useState(false);
 
   useEffect(() => {
     const loadPlans = async () => {
@@ -50,6 +80,60 @@ export default function DealerDetailView({ vm }) {
 
     if (isCreateOpen) loadPlans();
   }, [isCreateOpen]);
+
+  useEffect(() => {
+    const loadWarehouses = async () => {
+      setWarehousesLoading(true);
+      try {
+        const list = await warehousesService.getWarehouses();
+        setWarehouses(list);
+      } catch (err) {
+        console.error('Failed to load warehouses', err);
+        toast.error(err.message || 'Failed to load warehouses');
+        setWarehouses([]);
+      } finally {
+        setWarehousesLoading(false);
+      }
+    };
+
+    if (isWarehouseDialogOpen) {
+      setSelectedWarehouseId(primaryWarehouse?.warehouseId ?? null);
+      loadWarehouses();
+    }
+  }, [isWarehouseDialogOpen, primaryWarehouse?.warehouseId]);
+
+  const handleSavePrimaryWarehouse = async () => {
+    if (!selectedWarehouseId) {
+      toast.error('Please select a warehouse');
+      return;
+    }
+
+    setSavingWarehouse(true);
+    try {
+      await handleSetPrimaryWarehouse(selectedWarehouseId);
+      toast.success(
+        primaryWarehouse ? 'Primary warehouse updated successfully' : 'Primary warehouse linked successfully',
+      );
+      setIsWarehouseDialogOpen(false);
+    } catch (err) {
+      toast.error(err.message || 'Failed to save primary warehouse');
+    } finally {
+      setSavingWarehouse(false);
+    }
+  };
+
+  const handleConfirmDeletePrimaryWarehouse = async () => {
+    setDeletingWarehouse(true);
+    try {
+      await handleDeletePrimaryWarehouse();
+      toast.success('Primary warehouse link removed');
+      setIsDeleteWarehouseOpen(false);
+    } catch (err) {
+      toast.error(err.message || 'Failed to remove primary warehouse');
+    } finally {
+      setDeletingWarehouse(false);
+    }
+  };
 
   if (error) {
     return (
@@ -446,6 +530,139 @@ export default function DealerDetailView({ vm }) {
                 )}
               </Card>
             )}
+
+            {/* Primary Warehouse Routing */}
+            <Card className="border-none shadow-sm overflow-hidden border-l-4 border-l-primary">
+              <CardHeader className="pb-4 border-b bg-muted/10">
+                <div className="flex items-center justify-between gap-3">
+                  <CardTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
+                    <Warehouse className="h-5 w-5 text-primary" /> Primary Warehouse
+                  </CardTitle>
+                  {primaryWarehouse?.primary && (
+                    <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-semibold px-2.5 py-0.5">
+                      Primary
+                    </Badge>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="pt-6">
+                {primaryWarehouse ? (
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="bg-muted/30 rounded-xl p-4 border flex-1 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Warehouse Name</span>
+                      </div>
+                      <p className="text-base font-bold text-foreground">{primaryWarehouse.warehouseName}</p>
+                      <p className="text-sm font-mono text-muted-foreground">{primaryWarehouse.warehouseCode}</p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Button
+                        variant="outline"
+                        className="gap-2"
+                        onClick={() => setIsWarehouseDialogOpen(true)}
+                      >
+                        <Edit className="h-4 w-4" /> Change
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        className="gap-2"
+                        onClick={() => setIsDeleteWarehouseOpen(true)}
+                      >
+                        <Trash2 className="h-4 w-4" /> Remove
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center p-6 text-center text-muted-foreground bg-muted/30 rounded-xl border border-dashed">
+                    <Warehouse className="h-10 w-10 text-muted-foreground/60 mb-2 stroke-1" />
+                    <p className="font-medium text-sm mb-4">No primary warehouse linked to this dealer</p>
+                    <Button className="gap-2" onClick={() => setIsWarehouseDialogOpen(true)}>
+                      <Link2 className="h-4 w-4" /> Link Warehouse
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Dialog open={isWarehouseDialogOpen} onOpenChange={setIsWarehouseDialogOpen}>
+              <DialogContent className="max-w-lg">
+                <DialogHeader>
+                  <DialogTitle>
+                    {primaryWarehouse ? 'Change Primary Warehouse' : 'Link Primary Warehouse'}
+                  </DialogTitle>
+                </DialogHeader>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">
+                      Select Warehouse
+                    </label>
+                    {warehousesLoading ? (
+                      <div className="text-sm text-muted-foreground">Loading warehouses…</div>
+                    ) : warehouses.length === 0 ? (
+                      <div className="text-sm text-muted-foreground rounded-lg border border-dashed p-4 text-center">
+                        No warehouses available. Provision a warehouse first.
+                      </div>
+                    ) : (
+                      <select
+                        className="w-full p-2 rounded border bg-card"
+                        value={selectedWarehouseId || ''}
+                        onChange={(e) => setSelectedWarehouseId(Number(e.target.value) || null)}
+                      >
+                        <option value="">Select a warehouse</option>
+                        {warehouses.map((warehouse) => (
+                          <option key={warehouse.id} value={warehouse.id}>
+                            {warehouse.warehouseName} ({warehouse.warehouseCode})
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsWarehouseDialogOpen(false)}
+                      disabled={savingWarehouse}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleSavePrimaryWarehouse}
+                      disabled={savingWarehouse || warehousesLoading || warehouses.length === 0}
+                    >
+                      {savingWarehouse ? 'Saving…' : primaryWarehouse ? 'Update' : 'Link'}
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <AlertDialog open={isDeleteWarehouseOpen} onOpenChange={setIsDeleteWarehouseOpen}>
+              <AlertDialogContent className="border-border bg-card">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Remove primary warehouse link?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will unlink{' '}
+                    <strong>{primaryWarehouse?.warehouseName}</strong> ({primaryWarehouse?.warehouseCode})
+                    {' '}from this dealer. The warehouse itself will not be deleted.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={deletingWarehouse}>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    disabled={deletingWarehouse}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleConfirmDeletePrimaryWarehouse();
+                    }}
+                  >
+                    {deletingWarehouse ? 'Removing…' : 'Remove Link'}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
 
             {/* كرت إعدادات وحسابات المستخدمين */}
             {dealer.totalUsers && dealer.userRoles && (
