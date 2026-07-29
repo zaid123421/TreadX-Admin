@@ -21,6 +21,7 @@ export const API_ENDPOINTS = {
   DEALERS: '/dealers',
   ENHANCED_DEALERS_CREATE: '/enhanced-dealers/create',
   DEALER_BY_ID: (id) => `/dealers/${id}`,
+  DEALER_PRIMARY_WAREHOUSE: (id) => `/dealers/${id}/primary-warehouse`,
   DEALERS_BY_STATUS: '/dealers/status',
   DEALERS_SEARCH: '/dealers/search',
 
