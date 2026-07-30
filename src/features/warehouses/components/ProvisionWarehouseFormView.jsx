@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
@@ -14,14 +14,19 @@ import { Alert, AlertDescription } from '@/shared/ui/alert';
 import { Badge } from '@/shared/ui/badge';
 import {
   AlertCircle,
+  Eye,
+  EyeOff,
   Info,
   Loader2,
   UserCog,
 } from 'lucide-react';
 import {
+  
   handleStreetNumberChange,
 } from '@/features/leads/utils/leadUtils';
 import { ProvisioningChecklist } from './ProvisioningChecklist';
+
+
 
 // --- WMS Class Styles with Design System Tokens ---
 const wms = {
@@ -89,6 +94,8 @@ export function ProvisionWarehouseFormView({
   inputError,
   onClose,
 }) {
+  const [showManagerPassword, setShowManagerPassword] = useState(false);
+
   return (
     // Minimal spacing-y between sections
     <div className="w-full space-y-4">
@@ -380,14 +387,31 @@ export function ProvisionWarehouseFormView({
 
             <div className="space-y-1.5 sm:col-span-4">
               <RequiredLabel htmlFor="managerPassword">Initial Password</RequiredLabel>
-              <Input
-                id="managerPassword"
-                type="password"
-                value={formData.managerPassword}
-                onChange={(e) => handleInputChange('managerPassword', e.target.value)}
-                placeholder="Manager123!"
-                className={`${wms.input} ${inputError('managerPassword')}`}
-              />
+              <div className="relative">
+                <Input
+                  id="managerPassword"
+                  type={showManagerPassword ? 'text' : 'password'}
+                  value={formData.managerPassword}
+                  onChange={(e) => handleInputChange('managerPassword', e.target.value)}
+                  placeholder="Manager123!"
+                  className={`${wms.input} pe-10 ${inputError('managerPassword')}`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowManagerPassword(!showManagerPassword)}
+                  className="absolute end-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors focus:outline-hidden"
+                  aria-label={showManagerPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showManagerPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
+              {errors.managerPassword && (
+                <p className="text-xs text-destructive">{errors.managerPassword}</p>
+              )}
             </div>
           </div>
 

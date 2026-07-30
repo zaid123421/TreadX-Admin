@@ -124,6 +124,38 @@ export const dealersService = {
       throw new Error(handleApiError(error, 'Failed to delete dealer'));
     }
   },
+
+  getPrimaryWarehouse: async (dealerId) => {
+    try {
+      const response = await apiClient.get(API_ENDPOINTS.DEALER_PRIMARY_WAREHOUSE(dealerId));
+      return extractResponseData(response);
+    } catch (error) {
+      if (error.response?.status === 404) {
+        return null;
+      }
+      throw new Error(handleApiError(error, 'Failed to fetch primary warehouse'));
+    }
+  },
+
+  setPrimaryWarehouse: async (dealerId, warehouseId) => {
+    try {
+      const response = await apiClient.put(API_ENDPOINTS.DEALER_PRIMARY_WAREHOUSE(dealerId), {
+        warehouseId,
+      });
+      return extractResponseData(response);
+    } catch (error) {
+      throw new Error(handleApiError(error, 'Failed to set primary warehouse'));
+    }
+  },
+
+  deletePrimaryWarehouse: async (dealerId) => {
+    try {
+      await apiClient.delete(API_ENDPOINTS.DEALER_PRIMARY_WAREHOUSE(dealerId));
+      return { success: true };
+    } catch (error) {
+      throw new Error(handleApiError(error, 'Failed to remove primary warehouse'));
+    }
+  },
 };
 
 export default dealersService;
