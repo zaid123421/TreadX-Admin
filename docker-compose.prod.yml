@@ -1,0 +1,5 @@
+# Production overrides: use with base compose.
+# Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+services:
+  treadx-admin:
+    restart: unless-stopped
