@@ -22,3 +22,5 @@ docs
 *.md
 *.puml
 setup-structure.ps1
+.cursor
+treadx-admin
