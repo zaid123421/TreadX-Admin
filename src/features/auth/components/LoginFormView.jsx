@@ -22,8 +22,6 @@ export function LoginFormView({
   error,
   redirectPath,
   handleSubmit,
-  demoCredentials,
-  fillDemoCredentials,
 }) {
   const { t } = useTranslation(['auth', 'common']);
 

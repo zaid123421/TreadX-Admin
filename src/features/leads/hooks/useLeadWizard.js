@@ -31,9 +31,9 @@ export function useLeadWizard({ initialData = null, isEdit = false, onSuccess, o
   const [loadingCountries, setLoadingCountries] = useState(true);
   const [loadingProvinces, setLoadingProvinces] = useState(false);
   const [loadingCities, setLoadingCities] = useState(false);
-  const [countriesError, setCountriesError] = useState(null);
-  const [provincesError, setProvincesError] = useState(null);
-  const [citiesError, setCitiesError] = useState(null);
+  const [countriesError] = useState(null);
+  const [provincesError] = useState(null);
+  const [citiesError] = useState(null);
   const isInitialMount = useRef(true);
   const leadId = initialData?.id;
 

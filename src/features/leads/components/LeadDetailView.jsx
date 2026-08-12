@@ -94,7 +94,6 @@ export default function LeadDetailView({ vm }) {
     handleAssignLead,
     handlePreview,
     handleDownload,
-    formatDate,
     getInitials,
     previewContentType,
     deleting,
@@ -275,7 +274,7 @@ export default function LeadDetailView({ vm }) {
                         return isNaN(date.getTime())
                           ? "N/A"
                           : date.toLocaleDateString("en-CA");
-                      } catch (e) {
+                      } catch {
                         return "N/A";
                       }
                     })()}

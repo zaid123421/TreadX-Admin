@@ -20,9 +20,9 @@ export function useEnhancedDealerWizard({ onClose, onSuccess }) {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState(0);
+  const [currentPage] = useState(0);
   const [pageSize] = useState(5);
-  const [totalPages, setTotalPages] = useState(0);
+  const [, setTotalPages] = useState(0);
   const [selectedLead, setSelectedLead] = useState(null);
   const [formData, setFormData] = useState({
     ...defaultDealerRequest,
@@ -102,7 +102,7 @@ export function useEnhancedDealerWizard({ onClose, onSuccess }) {
     try {
       const response = await subscriptionPlansService.getActiveSubscriptionPlans({ page: 0, size: 100 });
       setSubscriptionPlans(response.content || []);
-    } catch (err) {
+    } catch {
       setSubscriptionPlans([]);
     }
   };

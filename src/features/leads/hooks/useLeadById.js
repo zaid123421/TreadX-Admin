@@ -13,7 +13,7 @@ export function useLeadById(leadId) {
         const data = await leadsService.getLead(leadId);
         setLead(data);
         setError(null);
-      } catch (err) {
+      } catch {
         setError('Failed to load lead.');
       } finally {
         setLoading(false);

@@ -18,7 +18,7 @@ import ErrorPage from '@/app/components/ErrorPage';
 import { WarehouseCard } from './WarehouseCard';
 import { EditWarehouseDialog } from './EditWarehouseDialog';
 
-function StatCard({ label, value, icon: Icon, iconClassName }) {
+function StatCard({ label, value, icon, iconClassName }) {
   return (
     <Card className="border-border bg-card shadow-sm">
       <CardContent className="flex items-center justify-between p-5">
@@ -29,7 +29,7 @@ function StatCard({ label, value, icon: Icon, iconClassName }) {
         <div
           className={`flex h-10 w-10 items-center justify-center rounded-lg ${iconClassName}`}
         >
-          <Icon className="h-5 w-5" />
+          {icon ? React.createElement(icon, { className: 'h-5 w-5' }) : null}
         </div>
       </CardContent>
     </Card>

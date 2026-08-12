@@ -5,7 +5,7 @@ import { Textarea } from '@/shared/ui/textarea';
 import { Label } from '@/shared/ui/label';
 import { Alert, AlertDescription } from '@/shared/ui/alert';
 import { Building2, AlertCircle, FileText } from 'lucide-react';
-import { formatPostalCode, formatPhoneNumber } from '../utils/leadUtils';
+import { formatPhoneNumber } from '../utils/leadUtils';
 
 export function ConversionRequestModalView({
   lead,

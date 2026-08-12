@@ -4,7 +4,7 @@ import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
 import { Mail, Phone, MapPin, User, Building2, Users, Shield, Wrench, CreditCard, Calendar, ArrowLeft, Trash2, Warehouse, Edit, Link2, Boxes, AlertTriangle } from 'lucide-react';
 import { formatPostalCode, formatPhoneNumber } from '../../leads/utils/leadUtils';
-import { displayDealerId, DEALER_STATUS_BADGE_STYLES } from '../utils/dealerUtils';
+import { DEALER_STATUS_BADGE_STYLES } from '../utils/dealerUtils';
 import ErrorPage from '@/app/components/ErrorPage';
 import { UserRole } from '@/shared/types/api';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/ui/dialog';
@@ -175,9 +175,6 @@ export default function DealerDetailView({ vm }) {
       />
     );
   }
-
-  // هنا تم تأمين الـ ID وتحويله إلى نص بشكل آمن لحل المشكلة فوراً
-  const safeDealerId = dealer.id ? String(dealer.id) : (vm.id ? String(vm.id) : '');
 
   return (
     <div className="min-h-screen bg-muted/20 py-8 px-4 sm:px-6 lg:px-8">

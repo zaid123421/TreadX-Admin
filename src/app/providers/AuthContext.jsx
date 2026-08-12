@@ -8,7 +8,7 @@ const authReducer = (state, action) => {
   switch (action.type) {
     case 'LOGIN_START':
       return { ...state, loading: true, error: null };
-    case 'LOGIN_SUCCESS':
+    case 'LOGIN_SUCCESS': {
       // Normalize role to string for compatibility
       const normalizedUser = {
         ...action.payload.user,
@@ -22,6 +22,7 @@ const authReducer = (state, action) => {
         token: action.payload.token,
         error: null 
       };
+    }
     case 'LOGIN_FAILURE':
       return { 
         ...state, 
@@ -39,13 +40,14 @@ const authReducer = (state, action) => {
         token: null,
         error: null 
       };
-    case 'SET_USER':
+    case 'SET_USER': {
       // Normalize role to string for compatibility
       const normalizedSetUser = {
         ...action.payload,
         roleName: typeof action.payload.role === 'object' ? action.payload.role.name : action.payload.role
       };
       return { ...state, user: normalizedSetUser };
+    }
     case 'CLEAR_ERROR':
       return { ...state, error: null };
     case 'INIT_DONE':
@@ -82,7 +84,7 @@ export const AuthProvider = ({ children }) => {
           type: 'LOGIN_SUCCESS', 
           payload: { token, user: parsedUser } 
         });
-      } catch (error) {
+      } catch {
         localStorage.removeItem('treadx_token');
         localStorage.removeItem('treadx_user');
       }

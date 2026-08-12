@@ -23,7 +23,7 @@ const getContactMethodIcon = (method) => {
   }
 };
 
-const getContactMethodPlaceholder = (method) => {
+const getContactMethodPlaceholder = () => {
   // Use the contact details field for notes about contact attempts, not for storing raw phone numbers
   return 'Enter notes about contact attempts (do not include phone numbers)';
 };

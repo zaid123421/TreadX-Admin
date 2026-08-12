@@ -472,7 +472,7 @@ export function LeadsListView({
                             return isNaN(date.getTime())
                               ? "N/A"
                               : date.toLocaleDateString("en-CA");
-                          } catch (e) {
+                          } catch {
                             return "N/A";
                           }
                         })()}
@@ -487,7 +487,7 @@ export function LeadsListView({
                             return isNaN(date.getTime())
                               ? "N/A"
                               : date.toLocaleDateString("en-CA");
-                          } catch (e) {
+                          } catch {
                             return "N/A";
                           }
                         })()}

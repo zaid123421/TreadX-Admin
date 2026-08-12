@@ -6,7 +6,7 @@ import { Label } from '@/shared/ui/label';
 import { Alert, AlertDescription } from '@/shared/ui/alert';
 import { CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { LeadStatus } from '@/shared/types/enums';
-import { formatPostalCode, formatPhoneNumber } from '../utils/leadUtils';
+import { formatPhoneNumber } from '../utils/leadUtils';
 
 export function LeadValidationModalView({
   lead,

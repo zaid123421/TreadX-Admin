@@ -1,9 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { conversionRequestsService } from '../services/conversionRequestsApiService';
 
 export function useConversionRequestsList() {
-  const navigate = useNavigate();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
