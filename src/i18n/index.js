@@ -13,6 +13,8 @@ import arDashboard from "./locales/ar/dashboard.json";
 import arAuth from "./locales/ar/auth.json";
 import enLeads from "./locales/en/leads.json";
 import arLeads from "./locales/ar/leads.json";
+import enReports from "./locales/en/reports.json";
+import arReports from "./locales/ar/reports.json";
 
 const resources = {
   en: {
@@ -22,6 +24,7 @@ const resources = {
     dashboard: enDashboard,
     auth: enAuth,
     leads: enLeads,
+    reports: enReports,
   },
   ar: {
     common: arCommon,
@@ -30,6 +33,7 @@ const resources = {
     dashboard: arDashboard,
     auth: arAuth,
     leads: arLeads,
+    reports: arReports,
   },
 };
 
@@ -40,7 +44,7 @@ i18n.use(initReactI18next).init({
   interpolation: {
     escapeValue: false,
   },
-  ns: ["common", "layout", "routes", "dashboard", "auth", "leads"],
+  ns: ["common", "layout", "routes", "dashboard", "auth", "leads", "reports"],
   defaultNS: "common",
 });
 

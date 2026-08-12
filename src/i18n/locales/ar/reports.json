@@ -1,0 +1,36 @@
+{
+  "breadcrumb": "لوحة الإدارة > التقارير",
+  "title": "التقارير",
+  "description": "تصدير تقارير المبيعات والعمليات والمستودعات كملفات Excel أو PDF.",
+  "exportHint": "حمّل هذا التقرير كـ Excel أو PDF.",
+  "dealerRequiredHint": "اختر تاجراً ثم حمّل Excel أو PDF.",
+  "selectDealer": "اختر تاجراً",
+  "loadingDealers": "جاري تحميل التجار...",
+  "noDealers": "لا يوجد تجار",
+  "exportExcel": "Excel",
+  "exportPdf": "PDF",
+  "selectDealerFirst": "اختر تاجراً أولاً",
+  "selectWarehouse": "اختر مستودعاً",
+  "loadingWarehouses": "جاري تحميل المستودعات...",
+  "noWarehouses": "لا توجد مستودعات",
+  "selectWarehouseFirst": "اختر مستودعاً أولاً",
+  "warehouseRequiredHint": "اختر مستودعاً من الأعلى — يُرسل warehouseId كـ query parameter عند التصدير.",
+  "warehouseExportHint": "يستخدم المستودع المختار من الأعلى.",
+  "downloadStarted": "بدأ التحميل",
+  "downloadFailed": "فشل تحميل التقرير",
+  "categories": {
+    "salesOps": "تقارير المبيعات والعمليات",
+    "platformWarehouse": "تقارير مستودعات المنصة"
+  },
+  "items": {
+    "salesPipeline": "خط أنابيب المبيعات",
+    "subscriptions": "الاشتراكات",
+    "orders": "الطلبات",
+    "dealersTires": "إطارات التجار",
+    "occupancy": "الإشغال",
+    "pendingWork": "الأعمال المعلقة",
+    "inventory": "المخزون",
+    "slaCompliance": "الالتزام بـ SLA",
+    "employeePerformance": "أداء الموظفين"
+  }
+}

@@ -21,7 +21,7 @@ import SubscriptionEditModal from '../../subscriptions/components/SubscriptionEd
 export function DealersListView({
   dealers,
   loading,
-  isInitialLoading, // 💡 استبدال المتغير القديم بمتغير الـ Initial Loading
+  isInitialLoading,
   error,
   searchQuery,
   setSearchQuery,
@@ -60,7 +60,6 @@ export function DealersListView({
     );
   }
 
-  // 💡 الـ Loader الكبير يعمل الآن فقط عند فتح الصفحة لأول مرة وليس عند البحث
   if (isInitialLoading) {
     return (
       <div className="min-h-screen bg-muted/10 flex items-center justify-center">
@@ -82,8 +81,6 @@ export function DealersListView({
       </div>
 
       <div className="max-w-7xl mx-auto space-y-5">
-        
-        {/* شريط البحث + فلترة الحالة */}
         <Card className="border-none shadow-xs bg-card">
           <CardContent className="p-4">
             <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
@@ -116,7 +113,6 @@ export function DealersListView({
           </CardContent>
         </Card>
 
-        {/* كرت عرض بيانات الجدول */}
         <Card className="border-none shadow-xs bg-card overflow-hidden">
           <CardHeader className="pb-4 border-b bg-card">
             <CardTitle className="text-lg font-bold flex items-center gap-2">
@@ -152,11 +148,9 @@ export function DealersListView({
                       <th className="py-3.5 px-6 font-semibold text-right">Actions</th>
                     </tr>
                   </thead>
-                  {/* 💡 تفعيل الشفافية الخفيفة للجدول بأكمله ليعلم المستخدم أن البيانات يتم تحديثها بالخلفية */}
                   <tbody className={`divide-y divide-border/60 transition-opacity duration-200 ${loading ? 'opacity-60' : 'opacity-100'}`}>
                     {dealers.map((dealer) => (
                       <tr key={dealer.id} className="group hover:bg-muted/30 transition-colors">
-                        
                         <td className="py-4 px-6">
                           <div className="space-y-0.5">
                             <div className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors">
@@ -182,13 +176,13 @@ export function DealersListView({
                         </td>
 
                         <td className="py-4 px-6">
-                          <Badge 
+                          <Badge
                             style={{
                               ...DEALER_STATUS_BADGE_STYLES[dealer.status],
                               fontWeight: 600,
                               fontSize: '11px',
                               borderRadius: '6px',
-                              padding: '2px 8px'
+                              padding: '2px 8px',
                             }}
                           >
                             {dealer.status}
@@ -198,39 +192,40 @@ export function DealersListView({
                         <td className="py-4 px-6 text-right">
                           <div className="flex items-center justify-end gap-1.5">
                             <Link to={`/dealers/${dealer.id}`}>
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground hover:bg-muted" 
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground hover:bg-muted"
                                 title="View Profile"
                               >
                                 <Eye className="h-4 w-4" />
                               </Button>
                             </Link>
-                            
+
                             {dealer.activeSubscriptionId && (
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 className="h-8 w-8 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10"
                                 title="Edit Subscription"
-                                onClick={() => handleEditClick({
-                                  id: dealer.activeSubscriptionId,
-                                  dealerId: dealer.id,
-                                  planId: dealer.subscriptionPlanId,
-                                  startDate: dealer.subscriptionStartDate,
-                                  endDate: dealer.subscriptionEndDate,
-                                  amountPaid: dealer.subscriptionAmountPaid,
-                                  autoRenew: dealer.subscriptionAutoRenew,
-                                  billingWeekday: dealer.subscriptionBillingWeekday,
-                                })}
+                                onClick={() =>
+                                  handleEditClick({
+                                    id: dealer.activeSubscriptionId,
+                                    dealerId: dealer.id,
+                                    planId: dealer.subscriptionPlanId,
+                                    startDate: dealer.subscriptionStartDate,
+                                    endDate: dealer.subscriptionEndDate,
+                                    amountPaid: dealer.subscriptionAmountPaid,
+                                    autoRenew: dealer.subscriptionAutoRenew,
+                                    billingWeekday: dealer.subscriptionBillingWeekday,
+                                  })
+                                }
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
                             )}
                           </div>
                         </td>
-
                       </tr>
                     ))}
                   </tbody>
@@ -240,11 +235,11 @@ export function DealersListView({
           </CardContent>
         </Card>
 
-        {/* شريط ترقين الصفحات (Pagination) */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between border border-border bg-card rounded-xl p-4 shadow-2xs">
             <div className="text-xs text-muted-foreground font-medium">
-              Showing page <span className="font-semibold text-foreground">{currentPage + 1}</span> of <span className="font-semibold text-foreground">{totalPages}</span>
+              Showing page <span className="font-semibold text-foreground">{currentPage + 1}</span> of{' '}
+              <span className="font-semibold text-foreground">{totalPages}</span>
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -268,10 +263,8 @@ export function DealersListView({
             </div>
           </div>
         )}
-
       </div>
 
-      {/* الـ Modal المدمج الخاص بك مع إصلاح القوس المفقود بالـ props */}
       {isEditing && editSubscription && (
         <SubscriptionEditModal
           subscription={editSubscription}

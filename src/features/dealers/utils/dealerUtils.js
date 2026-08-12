@@ -7,11 +7,11 @@
  */
 export const formatDealerId = (dealerId) => {
   if (!dealerId) return '';
-  
+
   // Convert to string and ensure it's a number
   const id = parseInt(dealerId);
   if (isNaN(id)) return dealerId;
-  
+
   // Format as 001010001 + dealer ID (padded to 7 digits)
   const paddedId = id.toString().padStart(7, '0');
   return `001010001${paddedId}`;
@@ -24,7 +24,7 @@ export const formatDealerId = (dealerId) => {
  */
 export const validateDealerId = (dealerId) => {
   if (!dealerId) return false;
-  
+
   // Check if it starts with 001010001 and has exactly 15 digits total
   // Format: Country(3) + Province(2) + City(4) + DealerId(6) = 15 digits
   const pattern = /^001010001\d{6}$/;
@@ -40,7 +40,7 @@ export const extractDealerId = (formattedId) => {
   if (!formattedId || !validateDealerId(formattedId)) {
     return null;
   }
-  
+
   // Remove the prefix and convert to number
   const originalId = formattedId.replace('001010001', '');
   const id = parseInt(originalId);
@@ -54,18 +54,18 @@ export const extractDealerId = (formattedId) => {
  */
 export const formatDealerIdForDisplay = (dealerId) => {
   if (!dealerId) return '';
-  
+
   // If it's already in the correct 15-digit format, return as is
   if (validateDealerId(dealerId)) {
     return dealerId;
   }
-  
+
   // If it's a plain number, format it
   const id = parseInt(dealerId);
   if (!isNaN(id)) {
     return formatDealerId(id);
   }
-  
+
   // If it's neither valid format nor a plain number, return as is
   return dealerId;
 };
@@ -77,7 +77,7 @@ export const formatDealerIdForDisplay = (dealerId) => {
  */
 export const normalizeDealerId = (dealerId) => {
   if (!dealerId) return '';
-  
+
   // Convert Arabic numerals to standard digits
   return dealerId
     .replace(/٠/g, '0')
@@ -111,4 +111,36 @@ export const DEALER_STATUS_BADGE_STYLES = {
     backgroundColor: 'var(--color-error-main)',
     color: 'var(--color-secondary-on-surface)',
   },
-}; 
+};
+
+/**
+ * Normalize GET /dealers/{id}/quota into UI-friendly tire storage stats.
+ * @param {Record<string, unknown>|null|undefined} quota
+ */
+export function normalizeDealerQuota(quota) {
+  if (!quota || typeof quota !== 'object') return null;
+
+  const tireCount = Number(quota.tireCount) || 0;
+  const tireStorageLimit = Number(quota.tireStorageLimit) || 0;
+  const remaining = Math.max(tireStorageLimit - tireCount, 0);
+  const tireUsagePercent = Number(
+    quota.tireUsagePercent ??
+      (tireStorageLimit > 0 ? (tireCount / tireStorageLimit) * 100 : 0),
+  );
+  const alertThresholdPercent = Number(quota.alertThresholdPercent) || 80;
+
+  return {
+    dealerId: quota.dealerId,
+    tireCount,
+    tireStorageLimit,
+    remaining,
+    tireUsagePercent: Number.isFinite(tireUsagePercent) ? tireUsagePercent : 0,
+    thresholdBreachedTires: Boolean(quota.thresholdBreachedTires),
+    alertThresholdPercent,
+    hasActiveSubscription: Boolean(quota.hasActiveSubscription),
+    activeStaff: Number(quota.activeStaff) || 0,
+    activeStaffLimit: Number(quota.activeStaffLimit) || 0,
+    staffUsagePercent: Number(quota.staffUsagePercent) || 0,
+    thresholdBreachedStaff: Boolean(quota.thresholdBreachedStaff),
+  };
+}

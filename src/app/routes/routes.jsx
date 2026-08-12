@@ -30,6 +30,7 @@ import {
   ForgotPassword,
 } from '../../features/access-control';
 import { WarehousesList, ProvisionWarehouse } from '../../features/warehouses';
+import { ReportsPage } from '../../features/reports';
 import { LoginForm } from '../../features/auth';
 
 export const publicRoutes = [
@@ -174,11 +175,11 @@ export const protectedRoutes = [
   },
   {
     path: 'reports',
+    element: ReportsPage,
     labelKey: 'reports',
     icon: BarChart3,
-    roles: ['SYSTEM_ADMIN',],
+    roles: ['SYSTEM_ADMIN'],
     showInSidebar: true,
-    placeholder: true,
   },
 ];
 

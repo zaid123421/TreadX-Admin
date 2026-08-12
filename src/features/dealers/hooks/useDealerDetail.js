@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/app/providers/AuthContext';
 import { dealersService } from '../services/dealersApiService';
 import { subscriptionsService } from '@/features/subscriptions/services/subscriptionsApiService';
+import { normalizeDealerQuota } from '../utils/dealerUtils';
 
 export function useDealerDetail() {
   const { user } = useAuth();
@@ -13,6 +14,9 @@ export function useDealerDetail() {
   const [error, setError] = useState(null);
   const [activeSubscription, setActiveSubscription] = useState(null);
   const [primaryWarehouse, setPrimaryWarehouse] = useState(null);
+  const [quota, setQuota] = useState(null);
+  const [quotaLoading, setQuotaLoading] = useState(false);
+  const [quotaError, setQuotaError] = useState(null);
 
   useEffect(() => {
     loadDealer();
@@ -26,16 +30,11 @@ export function useDealerDetail() {
       const dealerData = await dealersService.getDealer(id);
       setDealer(dealerData);
 
-      // Fetch active subscription
       try {
-        
         const subscriptionData = await subscriptionsService.getActiveSubscriptionByDealer(id);
-        console.log("بيانات الاشتراك القادمة من السيرفر:", subscriptionData);
         setActiveSubscription(subscriptionData);
-        
       } catch (subErr) {
-        // If no active subscription, that's okay
-        console.error("خطأ في جلب الاشتراك الفعلي:", subErr);
+        console.error('Error loading subscription:', subErr);
         setActiveSubscription(null);
       }
 
@@ -45,6 +44,19 @@ export function useDealerDetail() {
       } catch (whErr) {
         console.error('Error loading primary warehouse:', whErr);
         setPrimaryWarehouse(null);
+      }
+
+      setQuotaLoading(true);
+      setQuotaError(null);
+      try {
+        const quotaData = await dealersService.getDealerQuota(id);
+        setQuota(normalizeDealerQuota(quotaData));
+      } catch (quotaErr) {
+        console.error('Error loading dealer quota:', quotaErr);
+        setQuota(null);
+        setQuotaError(quotaErr.message || 'Failed to load storage quota');
+      } finally {
+        setQuotaLoading(false);
       }
     } catch (err) {
       console.error('Error loading dealer:', err);
@@ -101,5 +113,8 @@ export function useDealerDetail() {
     loadPrimaryWarehouse,
     handleSetPrimaryWarehouse,
     handleDeletePrimaryWarehouse,
+    quota,
+    quotaLoading,
+    quotaError,
   };
 }

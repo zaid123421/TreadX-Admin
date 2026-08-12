@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
-import { Mail, Phone, MapPin, User, Building2, Users, Shield, Wrench, CreditCard, Calendar, ArrowLeft, Trash2, Warehouse, Edit, Link2 } from 'lucide-react';
+import { Mail, Phone, MapPin, User, Building2, Users, Shield, Wrench, CreditCard, Calendar, ArrowLeft, Trash2, Warehouse, Edit, Link2, Boxes, AlertTriangle } from 'lucide-react';
 import { formatPostalCode, formatPhoneNumber } from '../../leads/utils/leadUtils';
 import { displayDealerId, DEALER_STATUS_BADGE_STYLES } from '../utils/dealerUtils';
 import ErrorPage from '@/app/components/ErrorPage';
@@ -19,12 +19,14 @@ import {
   AlertDialogTitle,
 } from '@/shared/ui/alert-dialog';
 import { Switch } from '@/shared/ui/switch';
+import { Progress } from '@/shared/ui/progress';
 import { subscriptionPlansService } from '@/features/subscriptions/services/subscriptionPlansApiService';
 import { subscriptionsService } from '@/features/subscriptions/services/subscriptionsApiService';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { canCreateDealerSubscription } from '@/shared/access/roleMatrix';
 import { warehousesService } from '@/features/warehouses/services/warehousesApiService';
+import { cn } from '@/shared/utils/utils';
 
 export default function DealerDetailView({ vm }) {
   const {
@@ -39,6 +41,9 @@ export default function DealerDetailView({ vm }) {
     primaryWarehouse,
     handleSetPrimaryWarehouse,
     handleDeletePrimaryWarehouse,
+    quota,
+    quotaLoading,
+    quotaError,
   } = vm;
   const canCreateSubscription = canCreateDealerSubscription(user);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -530,6 +535,111 @@ export default function DealerDetailView({ vm }) {
                 )}
               </Card>
             )}
+
+            {/* Storage Quota */}
+            <Card className="border-none shadow-sm overflow-hidden border-l-4 border-l-info">
+              <CardHeader className="pb-4 border-b bg-muted/10">
+                <div className="flex items-center justify-between gap-3">
+                  <CardTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
+                    <Boxes className="h-5 w-5 text-info" /> Storage Capacity
+                  </CardTitle>
+                  {quota?.thresholdBreachedTires ? (
+                    <Badge variant="outline" className="gap-1 border-warning/40 bg-warning/10 text-warning">
+                      <AlertTriangle className="h-3.5 w-3.5" /> Threshold breached
+                    </Badge>
+                  ) : null}
+                </div>
+              </CardHeader>
+              <CardContent className="pt-6">
+                {quotaLoading ? (
+                  <div className="space-y-3">
+                    <div className="h-4 w-40 animate-pulse rounded bg-muted" />
+                    <div className="h-2 w-full animate-pulse rounded bg-muted" />
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="h-16 animate-pulse rounded-xl bg-muted" />
+                      <div className="h-16 animate-pulse rounded-xl bg-muted" />
+                      <div className="h-16 animate-pulse rounded-xl bg-muted" />
+                    </div>
+                  </div>
+                ) : quotaError ? (
+                  <p className="text-sm text-muted-foreground">{quotaError}</p>
+                ) : !quota || !quota.hasActiveSubscription || quota.tireStorageLimit <= 0 ? (
+                  <div className="flex flex-col items-center justify-center p-6 text-center text-muted-foreground bg-muted/30 rounded-xl border border-dashed">
+                    <Boxes className="h-10 w-10 text-muted-foreground/60 mb-2 stroke-1" />
+                    <p className="font-medium text-sm">No storage quota available for this dealer</p>
+                  </div>
+                ) : (
+                  <div className="space-y-5">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground font-medium">Tire storage usage</span>
+                        <span className="font-semibold tabular-nums text-foreground">
+                          {Number(quota.tireCount).toLocaleString()} / {Number(quota.tireStorageLimit).toLocaleString()}
+                        </span>
+                      </div>
+                      <Progress
+                        value={Math.min(Math.max(quota.tireUsagePercent, 0), 100)}
+                        className={cn(
+                          'h-2.5',
+                          quota.thresholdBreachedTires ? 'bg-destructive/20' : 'bg-primary/15',
+                        )}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        {Math.round(quota.tireUsagePercent)}% used
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="rounded-xl border bg-muted/30 p-4">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Used</p>
+                        <p className="mt-1 text-xl font-bold tabular-nums text-foreground">
+                          {Number(quota.tireCount).toLocaleString()}
+                        </p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">tires stored</p>
+                      </div>
+                      <div className="rounded-xl border bg-muted/30 p-4">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Limit</p>
+                        <p className="mt-1 text-xl font-bold tabular-nums text-foreground">
+                          {Number(quota.tireStorageLimit).toLocaleString()}
+                        </p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">storage capacity</p>
+                      </div>
+                      <div className="rounded-xl border bg-muted/30 p-4">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Remaining</p>
+                        <p
+                          className={cn(
+                            'mt-1 text-xl font-bold tabular-nums',
+                            quota.thresholdBreachedTires ? 'text-warning' : 'text-foreground',
+                          )}
+                        >
+                          {Number(quota.remaining).toLocaleString()}
+                        </p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">slots left</p>
+                      </div>
+                    </div>
+
+                    {(quota.activeStaffLimit > 0 || quota.activeStaff > 0) && (
+                      <div className="rounded-xl border bg-muted/20 p-4">
+                        <div className="flex items-center justify-between gap-3 text-sm">
+                          <span className="font-medium text-muted-foreground">Staff quota</span>
+                          <span className="font-semibold tabular-nums text-foreground">
+                            {Number(quota.activeStaff).toLocaleString()} /{' '}
+                            {Number(quota.activeStaffLimit).toLocaleString()}
+                          </span>
+                        </div>
+                        {quota.thresholdBreachedStaff ? (
+                          <p className="mt-1 text-xs text-warning">Staff alert threshold breached</p>
+                        ) : (
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {Math.round(quota.staffUsagePercent)}% of staff limit used
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
             {/* Primary Warehouse Routing */}
             <Card className="border-none shadow-sm overflow-hidden border-l-4 border-l-primary">

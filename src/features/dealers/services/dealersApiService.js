@@ -50,6 +50,15 @@ export const dealersService = {
     }
   },
 
+  getDealerQuota: async (id) => {
+    try {
+      const response = await apiClient.get(API_ENDPOINTS.DEALER_QUOTA(id));
+      return extractResponseData(response);
+    } catch (error) {
+      throw new Error(handleApiError(error, 'Failed to fetch dealer quota'));
+    }
+  },
+
   createDealer: async (dealerData) => {
     try {
       const isEnhancedFlow = Boolean(

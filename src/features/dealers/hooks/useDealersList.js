@@ -6,27 +6,25 @@ import { subscriptionPlansService } from '@/features/subscriptions/services/subs
 export function useDealersList() {
   const [dealers, setDealers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isInitialLoading, setIsInitialLoading] = useState(true); // 💡 حالة التحميل الأولية للموقع
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(''); // 💡 قيمة البحث بعد التأخير
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [pageSize] = useState(10);
   const [subscriptionPlans, setSubscriptionPlans] = useState([]);
 
-  // 💡 تأثير الـ Debounce: انتظر 400 ملي ثانية بعد توقف المستخدم عن الكتابة لتحديث القيمة
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchQuery(searchQuery);
-      setCurrentPage(0); // إعادة الترقيم للصفحة الأولى عند تغير نص البحث
+      setCurrentPage(0);
     }, 400);
 
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  // 💡 جلب البيانات عند تغير الصفحة، الفلتر، أو القيمة المفلترة للبحث
   useEffect(() => {
     loadDealers();
   }, [currentPage, statusFilter, debouncedSearchQuery]);
@@ -83,7 +81,6 @@ export function useDealersList() {
   };
 
   const handleEditSubscription = async (id, data) => {
-    // Errors are surfaced inside SubscriptionEditModal — do not set list-level error
     await subscriptionsService.updateSubscription(id, data);
     await loadDealers();
   };
@@ -91,7 +88,7 @@ export function useDealersList() {
   return {
     dealers,
     loading,
-    isInitialLoading, // 💡 تمرير الحالة الجديدة للواجهة
+    isInitialLoading,
     error,
     searchQuery,
     setSearchQuery,

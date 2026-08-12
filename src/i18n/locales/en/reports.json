@@ -1,0 +1,36 @@
+{
+  "breadcrumb": "Admin Panel > Reports",
+  "title": "Reports",
+  "description": "Export sales, operations, and warehouse reports as Excel or PDF.",
+  "exportHint": "Download this report as Excel or PDF.",
+  "dealerRequiredHint": "Select a dealer, then download Excel or PDF.",
+  "selectDealer": "Select dealer",
+  "loadingDealers": "Loading dealers...",
+  "noDealers": "No dealers available",
+  "exportExcel": "Excel",
+  "exportPdf": "PDF",
+  "selectDealerFirst": "Select a dealer first",
+  "selectWarehouse": "Select warehouse",
+  "loadingWarehouses": "Loading warehouses...",
+  "noWarehouses": "No warehouses available",
+  "selectWarehouseFirst": "Select a warehouse first",
+  "warehouseRequiredHint": "Choose a warehouse above — warehouseId is sent as a query parameter on export.",
+  "warehouseExportHint": "Uses the warehouse selected above.",
+  "downloadStarted": "Download started",
+  "downloadFailed": "Failed to download report",
+  "categories": {
+    "salesOps": "Sales / Ops Reports",
+    "platformWarehouse": "Platform Warehouse Reports"
+  },
+  "items": {
+    "salesPipeline": "Sales Pipeline",
+    "subscriptions": "Subscriptions",
+    "orders": "Orders",
+    "dealersTires": "Dealers Tires",
+    "occupancy": "Occupancy",
+    "pendingWork": "Pending Work",
+    "inventory": "Inventory",
+    "slaCompliance": "SLA Compliance",
+    "employeePerformance": "Employee Performance"
+  }
+}
