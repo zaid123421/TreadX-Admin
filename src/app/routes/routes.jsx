@@ -3,7 +3,6 @@ import {
   Users,
   Building2,
   CreditCard,
-  Truck,
   BarChart3,
   Settings,
   CheckCircle,
@@ -164,14 +163,6 @@ export const protectedRoutes = [
     path: 'warehouses/provision',
     element: ProvisionWarehouse,
     roles: ['SYSTEM_ADMIN'],
-  },
-  {
-    path: 'inventory',
-    labelKey: 'inventory',
-    icon: Truck,
-    roles: ['SYSTEM_ADMIN'],
-    showInSidebar: true,
-    placeholder: true,
   },
   {
     path: 'reports',
