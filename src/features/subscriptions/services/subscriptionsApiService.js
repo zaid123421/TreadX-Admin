@@ -65,7 +65,18 @@ export const subscriptionsService = {
     } catch (error) {
       throw new Error(handleApiError(error, 'Failed to delete subscription'));
     }
-  }
+  },
+
+  updateDealerServiceDays: async (dealerId, serviceDays) => {
+    try {
+      const response = await apiClient.patch(API_ENDPOINTS.DEALER_SERVICE_DAYS(dealerId), {
+        serviceDays,
+      });
+      return extractResponseData(response);
+    } catch (error) {
+      throw new Error(handleApiError(error, 'Failed to update service days'));
+    }
+  },
 };
 
 export default subscriptionsService;

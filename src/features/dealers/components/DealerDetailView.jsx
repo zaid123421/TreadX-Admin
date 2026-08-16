@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
-import { Mail, Phone, MapPin, User, Building2, Users, Shield, Wrench, CreditCard, Calendar, ArrowLeft, Trash2, Warehouse, Edit, Link2, Boxes, AlertTriangle } from 'lucide-react';
+import { Mail, Phone, MapPin, User, Building2, Users, Shield, Wrench, CreditCard, Calendar, ArrowLeft, Trash2, Warehouse, Edit, Link2, Boxes, AlertTriangle, Truck } from 'lucide-react';
 import { formatPostalCode, formatPhoneNumber } from '../../leads/utils/leadUtils';
 import { DEALER_STATUS_BADGE_STYLES } from '../utils/dealerUtils';
 import ErrorPage from '@/app/components/ErrorPage';
@@ -24,8 +24,14 @@ import { subscriptionPlansService } from '@/features/subscriptions/services/subs
 import { subscriptionsService } from '@/features/subscriptions/services/subscriptionsApiService';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { canCreateDealerSubscription } from '@/shared/access/roleMatrix';
+import { canCreateDealerSubscription, canOverrideDealerServiceDays } from '@/shared/access/roleMatrix';
 import { warehousesService } from '@/features/warehouses/services/warehousesApiService';
+import {
+  getSubscriptionServiceDays,
+  WEEKDAY_LABELS,
+  WEEKDAY_SHORT_LABELS,
+  WEEKDAY_VALUES,
+} from '@/features/subscriptions/utils/subscriptionFormatters';
 import { cn } from '@/shared/utils/utils';
 
 export default function DealerDetailView({ vm }) {
@@ -44,8 +50,10 @@ export default function DealerDetailView({ vm }) {
     quota,
     quotaLoading,
     quotaError,
+    handleUpdateServiceDays,
   } = vm;
   const canCreateSubscription = canCreateDealerSubscription(user);
+  const canEditServiceDays = canOverrideDealerServiceDays(user);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [plans, setPlans] = useState([]);
   const [plansLoading, setPlansLoading] = useState(false);
@@ -68,6 +76,11 @@ export default function DealerDetailView({ vm }) {
   const [selectedWarehouseId, setSelectedWarehouseId] = useState(null);
   const [savingWarehouse, setSavingWarehouse] = useState(false);
   const [deletingWarehouse, setDeletingWarehouse] = useState(false);
+  const [isServiceDaysDialogOpen, setIsServiceDaysDialogOpen] = useState(false);
+  const [selectedServiceDay, setSelectedServiceDay] = useState(null);
+  const [savingServiceDays, setSavingServiceDays] = useState(false);
+
+  const currentServiceDay = getSubscriptionServiceDays(activeSubscription)[0] ?? null;
 
   useEffect(() => {
     const loadPlans = async () => {
@@ -106,6 +119,35 @@ export default function DealerDetailView({ vm }) {
       loadWarehouses();
     }
   }, [isWarehouseDialogOpen, primaryWarehouse?.warehouseId]);
+
+  useEffect(() => {
+    if (isServiceDaysDialogOpen && activeSubscription) {
+      const days = getSubscriptionServiceDays(activeSubscription);
+      setSelectedServiceDay(days[0] ?? null);
+    }
+  }, [isServiceDaysDialogOpen, activeSubscription]);
+
+  const handleSelectServiceDay = (day) => {
+    setSelectedServiceDay(day);
+  };
+
+  const handleSaveServiceDays = async () => {
+    if (!selectedServiceDay) {
+      toast.error('Select a service day');
+      return;
+    }
+
+    setSavingServiceDays(true);
+    try {
+      await handleUpdateServiceDays([selectedServiceDay]);
+      toast.success('Service day updated successfully');
+      setIsServiceDaysDialogOpen(false);
+    } catch (err) {
+      toast.error(err.message || 'Failed to update service day');
+    } finally {
+      setSavingServiceDays(false);
+    }
+  };
 
   const handleSavePrimaryWarehouse = async () => {
     if (!selectedWarehouseId) {
@@ -532,6 +574,103 @@ export default function DealerDetailView({ vm }) {
                 )}
               </Card>
             )}
+
+            {activeSubscription && (
+              <Card className="border-none shadow-sm overflow-hidden border-l-4 border-l-violet-500">
+                <CardHeader className="pb-4 border-b bg-muted/10">
+                  <div className="flex items-center justify-between gap-3">
+                    <CardTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
+                      <Truck className="h-5 w-5 text-violet-500" /> Service Days
+                    </CardTitle>
+                    {activeSubscription.serviceDaysOverridden ? (
+                      <Badge variant="outline" className="bg-violet-500/5 text-violet-600 border-violet-500/20 font-semibold px-2.5 py-0.5">
+                        Override
+                      </Badge>
+                    ) : null}
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex-1 space-y-3">
+                      <p className="text-sm text-muted-foreground">
+                        Weekly pickup and delivery day for this dealer.
+                      </p>
+                      {currentServiceDay ? (
+                        <Badge
+                          variant="outline"
+                          className="border-violet-500/20 bg-violet-500/5 text-violet-700 font-medium px-2.5 py-1"
+                        >
+                          {WEEKDAY_LABELS[currentServiceDay] ?? currentServiceDay}
+                        </Badge>
+                      ) : (
+                        <p className="text-sm font-medium text-muted-foreground">No service day configured</p>
+                      )}
+                    </div>
+                    {canEditServiceDays ? (
+                      <Button
+                        variant="outline"
+                        className="gap-2 shrink-0"
+                        onClick={() => setIsServiceDaysDialogOpen(true)}
+                      >
+                        <Edit className="h-4 w-4" /> Edit Day
+                      </Button>
+                    ) : null}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            <Dialog open={isServiceDaysDialogOpen} onOpenChange={setIsServiceDaysDialogOpen}>
+              <DialogContent className="max-w-lg">
+                <DialogHeader>
+                  <DialogTitle>Override Service Day</DialogTitle>
+                </DialogHeader>
+
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    Select one weekly pickup/delivery day. Only a single day can be chosen.
+                  </p>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {WEEKDAY_VALUES.map((day) => {
+                      const isSelected = selectedServiceDay === day;
+
+                      return (
+                        <button
+                          key={day}
+                          type="button"
+                          onClick={() => handleSelectServiceDay(day)}
+                          className={cn(
+                            'rounded-lg border px-3 py-2 text-sm font-medium transition-colors',
+                            isSelected
+                              ? 'border-violet-500 bg-violet-500/10 text-violet-700'
+                              : 'border-border bg-card text-muted-foreground hover:bg-muted/40',
+                          )}
+                        >
+                          {WEEKDAY_SHORT_LABELS[day]}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsServiceDaysDialogOpen(false)}
+                      disabled={savingServiceDays}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleSaveServiceDays}
+                      disabled={savingServiceDays || !selectedServiceDay}
+                    >
+                      {savingServiceDays ? 'Saving…' : 'Save'}
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
 
             {/* Storage Quota */}
             <Card className="border-none shadow-sm overflow-hidden border-l-4 border-l-info">

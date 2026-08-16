@@ -119,3 +119,8 @@ export function isSalesManagerLimitedToAgentCreation(user) {
 export function canProvisionWarehouse(user) {
   return user?.roleName === ROLE.SYSTEM_ADMIN;
 }
+
+/** Override dealer weekly service days — System Administrator only */
+export function canOverrideDealerServiceDays(user) {
+  return user?.roleName === ROLE.SYSTEM_ADMIN;
+}

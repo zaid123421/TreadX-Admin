@@ -63,6 +63,7 @@ export const API_ENDPOINTS = {
   SUBSCRIPTIONS_BY_DEALER: (dealerId) => `/subscriptions/dealer/${dealerId}`,
   ACTIVE_SUBSCRIPTION_BY_DEALER: (dealerId) =>
     `/subscriptions/dealer/${dealerId}/active`,
+  DEALER_SERVICE_DAYS: (dealerId) => `/subscriptions/dealer/${dealerId}/service-days`,
   SUBSCRIPTION_CANCEL: (id) => `/subscriptions/${id}/cancel`,
   SUBSCRIPTION_RENEW: (id) => `/subscriptions/${id}/renew`,
   SUBSCRIPTION_UPDATE: (id) => `/subscriptions/${id}`,
