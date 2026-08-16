@@ -99,6 +99,19 @@ export function useDealerDetail() {
     setPrimaryWarehouse(null);
   };
 
+  const handleUpdateServiceDays = async (serviceDays) => {
+    const result = await subscriptionsService.updateDealerServiceDays(id, serviceDays);
+    try {
+      const subscriptionData = await subscriptionsService.getActiveSubscriptionByDealer(id);
+      setActiveSubscription(subscriptionData);
+    } catch {
+      if (result && typeof result === 'object') {
+        setActiveSubscription((prev) => ({ ...(prev ?? {}), ...result, serviceDays }));
+      }
+    }
+    return result;
+  };
+
   return {
     user,
     id,
@@ -116,5 +129,6 @@ export function useDealerDetail() {
     quota,
     quotaLoading,
     quotaError,
+    handleUpdateServiceDays,
   };
 }
